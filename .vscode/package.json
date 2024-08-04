@@ -1,0 +1,71 @@
+{
+  "name": "2002",
+  "displayName": "AiProgram",
+  "description": "ai",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:extension.showPackageExplorer"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+      "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pa",
+          "title": "Package Explorer",
+          "icon": "resources/package-explorer.svg"
+        }
+      ]
+    },
+    "views": {
+      "pa": [
+        {
+          "id": "package-dependencies1",
+          "name": "Dependencies1",
+          "type": "webview"
+        },
+        {
+          "id": "package-dependencies2",
+          "name": "Dependencies2",
+          "type": "webview"
+        },
+        {
+          "id": "package-dependencies3",
+          "name": "Dependencies3",
+          "type": "webview"
+        }
+      ]
+    }
+  
+  
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.91.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "vsce": "^2.15.0"
+  }
+}
