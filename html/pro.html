@@ -1,0 +1,1316 @@
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.staticfile.net/font-awesome/4.7.0/css/font-awesome.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+    
+        <title>Customizable Input Blocks</title>
+        <style>
+
+            html {
+
+              margin: 0;
+              padding: 0;
+            }
+            body {
+                background-color: #222020;
+                font-family: Arial, sans-serif;
+                padding: 0;
+                display: inline-block;
+                width: 100%;
+                margin: 8px;
+            }
+            /* Global styles */
+            #app {
+                background-color: #222020;
+                font-family: Arial, sans-serif;
+                padding: 0;
+                display: inline-block;
+                width: 100%;
+            }
+            .message{
+                width: 100%;
+                height: auto;
+                display: flex;
+                flex-direction: column; /* 垂直排列 */
+                gap: 0; /* 项目之间的间距 */
+               border-bottom:2px solid #e0e0e0;
+                max-height: 800px;
+                overflow-x: hidden;
+                overflow-y:hidden;
+                 position: relative;
+            }
+            /* Container for each input block */
+            .input-block {
+                width: 100%;
+                vertical-align: top;
+                text-align: center;
+                box-sizing: border-box;
+                margin: 0;
+                background-color: #3e3e3e;
+                position: relative; /* Ensure positioning context */
+                overflow-x: hidden;
+            }
+
+            .input-block::-webkit-scrollbar {
+                width: 2px; /* 设置滚动条宽度 */
+            }
+
+            /* 轨道样式 */
+            .input-block::-webkit-scrollbar-track {
+                background-color: #000000; /* 滚动条轨道背景色 */
+            }
+
+             /* Textarea styles */
+            .input-block textarea {
+                background-color:#3e3e3e;
+                color: #e2dfdf;
+                border: none;
+                border-radius: 10px;
+                box-sizing: border-box;
+                font-size:1.5em;
+                min-height: 50px;
+                overflow: hidden;
+                padding: 1%;
+                resize: none;
+            }
+            /* Textarea styles */
+            #t4 {
+                position: absolute;
+                bottom: 0;
+                white-space: pre-wrap;
+                background-color: #a2a0a0;
+                height: 9%;
+                color: #ffffff;
+                border: none;
+                border-radius: 10px;
+                box-sizing: border-box;
+                font-size: 14px;
+                resize: none;
+                min-height: 50px;
+                padding: 10px; /* Add padding */
+                margin-bottom: 10px; /* Adjust margin */
+                width:70%;
+                margin-top:10px;
+            }
+
+            /* Button styles */
+            #copy-btn {
+                background-color: #a2a0a0;
+                height: 9%;
+                width: 5%;
+                border: none;
+                border-radius: 10px;
+                padding: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background-color 0.3s ease;
+                position: absolute;
+                bottom: 0;
+                margin-bottom: 10px;
+                right: 5%;
+                z-index: 100;
+            }
+
+            #copy-btn.disabled {
+              pointer-events: none; /* 禁止按钮点击事件 */
+              opacity: 0.3; /* 按钮变成半透明显示，表示禁用状态 */
+            }
+
+            #tooltip {
+                background-color: #3e3e3e;
+                width: 2%;
+                height: 3%;
+                z-index: 100;
+                display: none;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                position: absolute;
+                pointer-events: none;  /* 鼠标事件不在此元素上触发，而是穿透到下面的元素 */
+            }
+            .inputa{
+                width: 33%;
+                display: flex;
+                flex-direction: column; /* 或者 row，根据你的布局需要 */
+                margin-top: 1%;
+            }
+            .input{
+                width: 97%;
+                overflow-y: hidden;
+                border-radius: 10px;
+            }
+            .in{
+                width: 80%;
+                height: 90%;
+                padding: 10px; /* Add padding */
+                margin-right: 20px;
+                margin-bottom: 10px; /* Adjust margin */
+                z-index: 100;
+            }
+            .cod{
+                width: 90%;
+                height: 90%;
+                padding: 0;
+                margin: 0;
+            }
+            .tool{
+                margin-top: 0;
+                text-align: center;
+                display: flex;
+                justify-content: space-between; /* 子元素之间平均分布 */
+                align-items: center; /* 垂直居中对齐 */
+                width: 100%;
+                height: 22px;
+                background-color: #3e3e3e;
+            }
+            .tool button{
+                margin-top: 0.5%;
+                width: 3%;
+                height: 80%;
+                background-color: #3e3e3e;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background-color 0.3s ease;
+                bottom: 0;
+                display: flex;
+                justify-content: space-between; /* 子元素之间平均分布 */
+                align-items: center; /* 垂直居中对齐 */
+
+            }
+
+            .inputs{
+                width: 100%;
+                height: auto;
+                display: flex; /* 使用 Flexbox 布局 */
+                background-color: #3e3e3e;
+            }
+            #b1b{
+                margin-left: 0.5%;
+            }
+            #b1c{
+                margin-left: 27%;
+            }
+            #b1{
+
+                margin-right: 25%;
+            }
+            #b2c{
+                margin-left: 3%;
+                margin-right: 0;
+            }
+            #b2{
+                margin-left: 0;
+                margin-right: 0;
+            }
+            #b3a{
+                 margin-left: 25%;
+            }
+            #b3{
+
+                 margin-right: 1%;
+            }
+            #b4{
+                margin-right: 0%;
+            }
+            .secfor{
+                position: relative;
+            }
+            .resizable-component {
+              width: 100%;
+              border: 1px solid #ccc;
+              position: relative;
+            }
+
+            .content {
+              padding: 10px;
+            }
+
+            .resize-handle {
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 1px;
+              cursor: ns-resize;
+              background-color: #f0f0f0;
+              border-top: 1px solid #ccc;
+            }
+            .co::-webkit-scrollbar {
+                width: 12px; /* 滚动条宽度 */
+                height: 7px; /* 滚动条高度 */
+            }
+            .co::-webkit-scrollbar-thumb {
+                background-color: #888; /* 滚动条滑块颜色 */
+                border-radius: 6px; /* 滚动条滑块圆角 */
+            }
+                    /* Button styles */
+            .copy-btna {
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                position: absolute;
+                top: 5px;
+                right: 25px;
+            }
+            .makefile {
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                position: absolute;
+                top: 5px;
+                right: 55px;
+            }
+
+        </style>
+</head>
+
+<body>
+    <div id="app" :class="{'sidebar-open': sidebarVisible}">
+        <!-- 侧边栏 -->
+        <div id="sidebar" v-if="sidebarVisible" style="width: 200px; height: 100vh; background-color: #3e3e3e; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; overflow-y: auto;">
+            <div v-for="(project, index) in projects" :key="index" style="display: flex; align-items: center;">
+                <input v-if="project.editing" 
+                       v-model="project.newName" 
+                       @blur="finishEditing(index)" 
+                       @keyup.enter="finishEditing(index)" 
+                       style="flex-grow: 1; margin: 10px; padding: 10px; background-color: #a2a0a0; color: white; border: none; border-radius: 5px;" />
+                <button v-else 
+                        @click="switchProject(index)" 
+                        @dblclick="renameProject(index)" 
+                        style="flex-grow: 1; margin: 10px; padding: 10px; background-color: #a2a0a0; color: white; border: none; border-radius: 5px;">
+                    {{ project.name }}
+                </button>
+                <button v-if="!project.editing" 
+                        @click="deleteProject(index)" 
+                        style="margin: 10px; padding: 5px; background-color: #a2a0a0; color: white; border: none; border-radius: 5px;">
+                    X
+                </button>
+            </div>
+            <button @click="addProject" style="margin: 10px; padding: 10px; background-color: #a2a0a0; color: white; border: none; border-radius: 5px;">
+                点击新建项目
+            </button>
+        </div>
+
+        <div :style="sidebarVisible ? 'margin-left: 200px; width: calc(100% - 200px);' : 'margin-left: 0; width: 100%;'">
+            <button id="tooltip"><i class="fa fa-android"></i></button>
+            <div v-if="chat" style="display: flex; justify-content: flex-end; flex-direction: column; align-items: flex-end; width: 33%; position: absolute; z-index: 110; top: 0; left: 200px;" ref="askai">
+                <div style="display: flex">
+                    <button @click="ask"><i class="fa fa-android" style="border-radius: 10px;"></i></button>
+                    <button @click="makeask"><i class="fa fa-close" style="border-radius: 10px;"></i></button>
+                </div>
+                <textarea style="width: 100%; overflow-y: auto; overflow-x: hidden; padding: 0; height: 150px; resize: none; border-radius: 10px;" v-model="askcon"></textarea>
+            </div>
+
+            <div class="input-block">
+                <div v-for="(message, index) in projects[currentProjectIndex].messages" :key="index" class="message resizable-component" :style="{ height: message.componentHeight + 'px' }" :ref="'all' + '-' + index">
+                    <div class="tool">
+                        <button id="b1b" @click="toggleCollapse(index)">
+                            <div v-if="!message.collapsed">
+                                <i class="fa fa-caret-down" style="color:white"></i>
+                            </div>
+                            <div v-if="message.collapsed">
+                                <i class="fa fa-caret-right" style="color:white"></i>
+                            </div>
+                        </button>
+                        <button id="b1c" @click="chata(index, 0)"><i class="fa fa-comment-o" style="color:white"></i></button>
+                        <button id="b1" @click="merge(index, 4)"><i class="fa fa-adjust" style="color:white"></i></button>
+                        <button id="b2c" @click="chata(index, 1)"><i class="fa fa-comment-o" style="color:white"></i></button>
+                        <button id="b2" @click="merge(index, 5)"><i class="fa fa-code" style="color:white"></i></button>
+                        <button id="b3a" @click="reload(index)"><i class="fa fa-bullseye" style="color:white"></i></button>
+                        <button id="b3c" @click="chata(index, 2)"><i class="fa fa-comment-o" style="color:white"></i></button>
+                        <button id="b3"><i class="fa fa-calendar-plus-o" style="color:white"></i></button>
+                        <button id="b4" @click="closemodel(index)"><i class="fa fa-close" style="color:white; border-radius: 10px;"></i></button>
+                    </div>
+                    <div v-if="!message.collapsed" style="margin-bottom: auto; margin-top: 0; text-align: center;">
+                        <div class="inputs">
+                            <div class="inputa" :ref="'call1-' + index">
+                                <div v-for="(seg, num) in projects[currentProjectIndex].messages[index].rawsegments" :key="num" class="secfor">
+                                    <!-- 根据 type 来选择不同的元素 -->
+                                    <template v-if="seg.type === 'text'">
+                                        <textarea class="input" @input="a1(index, num)" :ref="'t1' + '-' + index + '-' + num" v-model="projects[currentProjectIndex].messages[index].rawsegments[num].content"></textarea>
+                                    </template>
+                                    <template v-else-if="seg.type === 'code'">
+                                        <button class="makefile" @click="makfile(index, num, 0)"><i class="fa fa-caret-square-o-right"></i></button>
+                                        <button class="copy-btna" @click="copyToClipboard(index, num, 0)"><i class="fa fa-copy"></i></button>
+                                        <pre contenteditable="true" @input="a2(index, num)" :ref="'c1' + '-' + index + '-' + num" style="border-radius: 10px; width: 95%" class="co"><code class="input" :class="'language-' + seg.lan" contenteditable="true">{{ projects[currentProjectIndex].messages[index].rawsegments[num].content }}</code></pre>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="inputa" :ref="'call2-' + index">
+                                <div v-for="(seg, num) in projects[currentProjectIndex].messages[index].segments" :key="num" class="secfor">
+                                    <!-- 根据 type 来选择不同的元素 -->
+                                    <template v-if="seg.type === 'text'">
+                                        <textarea class="input" @input="b1(index, num)" :ref="'t2' + '-' + index + '-' + num" v-model="projects[currentProjectIndex].messages[index].segments[num].content"></textarea>
+                                    </template>
+                                    <template v-else-if="seg.type === 'code'">
+                                        <button class="makefile" @click="makfile(index, num, 1)"><i class="fa fa-caret-square-o-right"></i></button>
+                                        <button class="copy-btna" @click="copyToClipboard(index, num, 1)"><i class="fa fa-copy"></i></button>
+                                        <pre contenteditable="true" @input="b2(index, num)" :ref="'c2' + '-' + index + '-' + num" style="border-radius: 10px; width: 95%" class="co"><code class="input" :class="'language-' + seg.lan" contenteditable="true">{{ projects[currentProjectIndex].messages[index].segments[num].content }}</code></pre>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="inputa" :ref="'call3-' + index">
+                                <div v-for="(seg, num) in projects[currentProjectIndex].messages[index].cooksegments" :key="num" class="secfor">
+                                    <!-- 根据 type 来选择不同的元素 -->
+                                    <template v-if="seg.type === 'text'">
+                                        <textarea class="input" @input="d1(index, num)" :ref="'t3' + '-' + index + '-' + num" v-model="projects[currentProjectIndex].messages[index].cooksegments[num].content"></textarea>
+                                    </template>
+                                    <template v-else-if="seg.type === 'code'">
+                                        <button class="makefile" @click="makfile(index, num, 2)"><i class="fa fa-caret-square-o-right"></i></button>
+                                        <button class="copy-btna" @click="copyToClipboard(index, num, 2)"><i class="fa fa-copy"></i></button>
+                                        <pre contenteditable="true" @input="d2(index, num)" :ref="'c3' + '-' + index + '-' + num" style="border-radius: 10px; width: 95%" class="co"><code class="input" :class="'language-' + seg.lan" contenteditable="true">{{ projects[currentProjectIndex].messages[index].cooksegments[num].content }}</code></pre>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="resize-handle" @mousedown="startResize($event, index)" style="z-index: 100; position: fixed; margin-left: 8px; bottom: 0" :ref="'la' + '-' + index"></div>
+                </div>
+            </div>
+
+            <div id="de4">
+                <!-- 切换侧边栏按钮 -->
+                <button @click="toggleSidebar" style="margin: 10px; padding: 10px; background-color: #3e3e3e; color: white; border: none; border-radius: 5px; font-size: 24px;">
+                    <i :class="sidebarVisible ? 'fa fa-angle-left' : 'fa fa-angle-right'"></i>
+                </button>
+                <textarea rows="40" cols="50" class="in" placeholder="此处输入您的代码需求" id="t4" v-model="chinese"></textarea>
+                <button id="copy-btn" style="font-size:24px" @click="rawchinese" :disabled="chinese.trim().length === 0"><i class="fa fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    
+</body>
+
+
+<script>
+     const vscode = acquireVsCodeApi();
+        new Vue({
+        el: '#app',
+        data:
+        {   
+            wh: 1, // 123分别从左到右是123 4代表生成伪代码 5代表生成代码
+            whme: 1, // 哪个模块的问题
+            askcon: "",
+            chat: false,
+            sidebarVisible: false, // 侧边栏是否展示
+            currentProjectIndex: 0, // 当前选中的项目
+            chinese: "333",
+            pseudocode: "",
+            projects: [
+                {
+                    name: "乒乓球游戏",
+                    editing:false,
+                    newName: '',
+                    messages: [
+                    {   innitial:0,
+                        resizing: false,
+                        startY: 0,
+                        startHeight: 0,
+                        componentHeight: 1000,
+                        collapsed:false,
+                        id:0,
+                    rawsegments:[
+                        {  text:"",
+                            type: "text",
+                            content: "我想使⽤ Python 和 Pygame 开发⼀款基本的乒乓球游戏。该游戏需要实现以下功能：1. 拥有⼀个AI对⼿从⽽保证能够实现⽐赛功能。2. 设定得分机制，如果玩家赢⼀球则玩家得分加⼀，反之则AI得分加⼀，在屏幕上⽅输出实时⽐赛信息。⼀局⽐赛共计11分，先得11分者为胜者，⽐赛结束，在屏幕中央输出最后⽐分信息以及胜者信息。3. 游戏拥有不同难度等级具体分为easy，medium和hard模式，在不同模式下AI对⼿的反应速度和乒乓球移动速度各不相同。同时要求⽤户能够输⼊不同的难度模式。请根据上述需求，⽤伪代码（⽂字描述，⽽⾮Python源代码）的形式，以模块为单位描述每个模块的功能与逻辑" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "text",
+                        content: '球模块功能：控制球的运动检测碰撞并改变⽅向逻辑：plaintext初始化球位置初始化球速度和⽅向（基于难度设置）更新球位置如果球碰到上下边界，改变垂直⽅向如果球碰到玩家或AI挡板，改变⽔平⽅向如果球出界，更新分数并重置球位置3. 玩家挡板模块功能：控制玩家挡板的移动逻辑：plaintext初始化玩家挡板位置更新玩家挡板位置（根据⽤户输⼊，上移或下移）检查是否超出边界' ,
+                        lan:"javascript"
+                        },
+
+                    ],
+                        segments:[
+                        {
+                            type: "text",
+                            content: "我们希望为游戏增加⼀个暂停按键，如果玩家按下按键则游戏暂停，再次按下按键则游戏继续。为此，我们需要修改两个模块的代码。⾸先，主游戏模块的伪代码改为：" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "code",
+                        content: "\n" +
+                            "初始化\n" +
+                            "Pygame\n" +
+                            "设置窗⼝尺⼨\n" +
+                            "初始化球、玩家挡板、\n" +
+                            "AI\n" +
+                            "挡板\n" +
+                            "初始化分数\n" +
+                            "初始化游戏难度（由⽤户输⼊）\n" +
+                            "开始游戏循环    \n" +
+                            "处理⽤户输⼊（如上下移动玩家挡板）    if \n" +
+                            "当前未处于暂停状态：        \n" +
+                            "更新球的位置        \n" +
+                            "检测球是否碰撞到挡板或边界        \n" +
+                            "更新\n" +
+                            "AI\n" +
+                            "挡板的位置（基于难度设置）        \n" +
+                            "检测得分并更新分数        \n" +
+                            "检查是否有⼈得了\n" +
+                            "11\n" +
+                            "分    \n" +
+                            "刷新屏幕    \n" +
+                            "更新显⽰分数和⽐赛信息    \n" +
+                            "如果⽐赛结束，显⽰最后⽐分和胜者信息\n" +
+                            "结束游戏循环\n" +
+                            "退出\n" +
+                            "Pygame",
+                        lan:"python"
+                        },{
+                            type: "text",
+                            content: "分数和⽐赛信息模块的伪代码改为：" ,
+                            lan:"javascript"
+                        },{
+                        type: "code",
+                        content: "\n" +
+                            "初始化玩家和\n" +
+                            "AI\n" +
+                            "分数\n" +
+                            "更新分数    \n" +
+                            "如果球出界，根据情况增加玩家或\n" +
+                            "AI\n" +
+                            "的分数\n" +
+                            "检查⽐赛结束    \n" +
+                            "如果有⼀⽅得分达到\n" +
+                            "11\n" +
+                            "分，设置⽐赛结束标志\n" +
+                            "显⽰实时分数和⽐赛信息    \n" +
+                            "在屏幕上⽅显⽰当前分数    if \n" +
+                            "处于暂停状态：        \n" +
+                            "在屏幕中央显⽰\n" +
+                            "PAUSE\n" +
+                            "    \n" +
+                            "如果⽐赛结束，显⽰最终⽐分和胜者信息\n" +
+                            "",
+                        lan:"python"
+                            }
+
+                    ],
+                        cooksegments:[
+                        {
+                            type: "text",
+                            content: "该代码实现了球的初始化、位置更新、碰撞检测、重置和绘制功能。通过update_position⽅法更新球的位置，通过check_collision_with_paddle⽅法检测球与挡板的碰撞，通过reset_position⽅法在得分后重置球的位置，通过draw⽅法在屏幕上绘制球。速度设置根据难度进⾏调整\n" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "code",
+                        content: " import pygame\n" +
+                            " import random\n" +
+                            " class Ball:\n" +
+                            " def __init__(self, screen_width, screen_height, difficulty):\n" +
+                            " self.screen_width = screen_width\n" +
+                            " self.screen_height = screen_height\n" +
+                            " self.difficulty = difficulty\n" +
+                            " # \n" +
+                            "初始化球的位置\n" +
+                            "self.x = screen_width // 2\n" +
+                            " self.y = screen_height // 2\n" +
+                            " # \n" +
+                            "根据难度设置球的速度\n" +
+                            "self.set_speed(difficulty)\n" +
+                            " # \n" +
+                            "初始化球的⽅向\n" +
+                            "self.direction_x = random.choice([-1, 1])\n" +
+                            " self.direction_y = random.choice([-1, 1])\n" +
+                            " # \n" +
+                            "定义球的尺⼨\n" +
+                            "self.width = 10\n" +
+                            " self.height = 10\n" +
+                            " def set_speed(self, difficulty):\n" +
+                            " if difficulty == 'easy':\n" +
+                            " self.speed = 5\n" +
+                            " elif difficulty == 'medium':\n" +
+                            " self.speed = 7\n" +
+                            " elif difficulty == 'hard':" +
+                            "self.speed = 10\n" +
+                            " else:\n" +
+                            " raise ValueError(\"Invalid difficulty level\")\n" +
+                            " def update_position(self):\n" +
+                            " # \n" +
+                            "更新球的位置\n" +
+                            "self.x += self.direction_x * self.speed\n" +
+                            " self.y += self.direction_y * self.speed\n" +
+                            " # \n" +
+                            "检测球是否碰到上下边界\n" +
+                            "if self.y <= 0 or self.y >= self.screen_height - self.height:\n" +
+                            " self.direction_y *= -1\n" +
+                            " def check_collision_with_paddle(self, paddle):\n" +
+                            " # \n" +
+                            "检测球是否碰到挡板\n" +
+                            "if (self.x <= paddle.x + paddle.width and\n" +
+                            " self.x + self.width >= paddle.x and\n" +
+                            " self.y <= paddle.y + paddle.height and\n" +
+                            " self.y + self.height >= paddle.y):\n" +
+                            " self.direction_x *= -1\n" +
+                            " def reset_position(self):\n" +
+                            " # \n" +
+                            "重置球的位置和⽅向\n" +
+                            "self.x = self.screen_width // 2\n" +
+                            " self.y = self.screen_height // 2\n" +
+                            " self.direction_x = random.choice([-1, 1])\n" +
+                            " self.direction_y = random.choice([-1, 1])\n" +
+                            " def draw(self, screen):\n" +
+                            " # \n" +
+                            "在屏幕上绘制球\n" +
+                            "pygame.draw.rect(screen, (255, 255, 255), (self.x, self.y, self.width, \n" +
+                            "self.height))",
+                        lan:"python"
+                        },
+                    ]
+                    },
+                // More messages can be added here
+                ],
+                },
+                // 更多项目可以在这里添加
+                {
+                    name: "demo",
+                    editing:false,
+                    newName: '',
+                    messages: [
+                        {   innitial:0,
+                        resizing: false,
+                        startY: 0,
+                        startHeight: 0,
+                        componentHeight: 1000,
+                        collapsed:false,
+                        id:0,
+                    rawsegments:[
+                        {  text:"",
+                            type: "text",
+                            content: "我想使⽤ Python 和 Pygame 开发⼀款基本的乒乓球游戏。该游戏需要实现以下功能：1. 拥有⼀个AI对⼿从⽽保证能够实现⽐赛功能。2. 设定得分机制，如果玩家赢⼀球则玩家得分加⼀，反之则AI得分加⼀，在屏幕上⽅输出实时⽐赛信息。⼀局⽐赛共计11分，先得11分者为胜者，⽐赛结束，在屏幕中央输出最后⽐分信息以及胜者信息。3. 游戏拥有不同难度等级具体分为easy，medium和hard模式，在不同模式下AI对⼿的反应速度和乒乓球移动速度各不相同。同时要求⽤户能够输⼊不同的难度模式。请根据上述需求，⽤伪代码（⽂字描述，⽽⾮Python源代码）的形式，以模块为单位描述每个模块的功能与逻辑" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "text",
+                        content: '球模块功能：控制球的运动检测碰撞并改变⽅向逻辑：plaintext初始化球位置初始化球速度和⽅向（基于难度设置）更新球位置如果球碰到上下边界，改变垂直⽅向如果球碰到玩家或AI挡板，改变⽔平⽅向如果球出界，更新分数并重置球位置3. 玩家挡板模块功能：控制玩家挡板的移动逻辑：plaintext初始化玩家挡板位置更新玩家挡板位置（根据⽤户输⼊，上移或下移）检查是否超出边界' ,
+                        lan:"javascript"
+                        },
+
+                    ],
+                        segments:[
+                        {
+                            type: "text",
+                            content: "我们希望为游戏增加⼀个暂停按键，如果玩家按下按键则游戏暂停，再次按下按键则游戏继续。为此，我们需要修改两个模块的代码。⾸先，主游戏模块的伪代码改为：" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "code",
+                        content: "\n" +
+                            "初始化\n" +
+                            "Pygame\n" +
+                            "设置窗⼝尺⼨\n" +
+                            "初始化球、玩家挡板、\n" +
+                            "AI\n" +
+                            "挡板\n" +
+                            "初始化分数\n" +
+                            "初始化游戏难度（由⽤户输⼊）\n" +
+                            "开始游戏循环    \n" +
+                            "处理⽤户输⼊（如上下移动玩家挡板）    if \n" +
+                            "当前未处于暂停状态：        \n" +
+                            "更新球的位置        \n" +
+                            "检测球是否碰撞到挡板或边界        \n" +
+                            "更新\n" +
+                            "AI\n" +
+                            "挡板的位置（基于难度设置）        \n" +
+                            "检测得分并更新分数        \n" +
+                            "检查是否有⼈得了\n" +
+                            "11\n" +
+                            "分    \n" +
+                            "刷新屏幕    \n" +
+                            "更新显⽰分数和⽐赛信息    \n" +
+                            "如果⽐赛结束，显⽰最后⽐分和胜者信息\n" +
+                            "结束游戏循环\n" +
+                            "退出\n" +
+                            "Pygame",
+                        lan:"python"
+                        },{
+                            type: "text",
+                            content: "分数和⽐赛信息模块的伪代码改为：" ,
+                            lan:"javascript"
+                        },{
+                        type: "code",
+                        content: "\n" +
+                            "初始化玩家和\n" +
+                            "AI\n" +
+                            "分数\n" +
+                            "更新分数    \n" +
+                            "如果球出界，根据情况增加玩家或\n" +
+                            "AI\n" +
+                            "的分数\n" +
+                            "检查⽐赛结束    \n" +
+                            "如果有⼀⽅得分达到\n" +
+                            "11\n" +
+                            "分，设置⽐赛结束标志\n" +
+                            "显⽰实时分数和⽐赛信息    \n" +
+                            "在屏幕上⽅显⽰当前分数    if \n" +
+                            "处于暂停状态：        \n" +
+                            "在屏幕中央显⽰\n" +
+                            "PAUSE\n" +
+                            "    \n" +
+                            "如果⽐赛结束，显⽰最终⽐分和胜者信息\n" +
+                            "",
+                        lan:"python"
+                            }
+
+                    ],
+                        cooksegments:[
+                        {
+                            type: "text",
+                            content: "该代码实现了球的初始化、位置更新、碰撞检测、重置和绘制功能。通过update_position⽅法更新球的位置，通过check_collision_with_paddle⽅法检测球与挡板的碰撞，通过reset_position⽅法在得分后重置球的位置，通过draw⽅法在屏幕上绘制球。速度设置根据难度进⾏调整\n" ,
+                            lan:"javascript"
+                        },
+                        {
+                        type: "code",
+                        content: " import pygame\n" +
+                            " import random\n" +
+                            " class Ball:\n" +
+                            " def __init__(self, screen_width, screen_height, difficulty):\n" +
+                            " self.screen_width = screen_width\n" +
+                            " self.screen_height = screen_height\n" +
+                            " self.difficulty = difficulty\n" +
+                            " # \n" +
+                            "初始化球的位置\n" +
+                            "self.x = screen_width // 2\n" +
+                            " self.y = screen_height // 2\n" +
+                            " # \n" +
+                            "根据难度设置球的速度\n" +
+                            "self.set_speed(difficulty)\n" +
+                            " # \n" +
+                            "初始化球的⽅向\n" +
+                            "self.direction_x = random.choice([-1, 1])\n" +
+                            " self.direction_y = random.choice([-1, 1])\n" +
+                            " # \n" +
+                            "定义球的尺⼨\n" +
+                            "self.width = 10\n" +
+                            " self.height = 10\n" +
+                            " def set_speed(self, difficulty):\n" +
+                            " if difficulty == 'easy':\n" +
+                            " self.speed = 5\n" +
+                            " elif difficulty == 'medium':\n" +
+                            " self.speed = 7\n" +
+                            " elif difficulty == 'hard':" +
+                            "self.speed = 10\n" +
+                            " else:\n" +
+                            " raise ValueError(\"Invalid difficulty level\")\n" +
+                            " def update_position(self):\n" +
+                            " # \n" +
+                            "更新球的位置\n" +
+                            "self.x += self.direction_x * self.speed\n" +
+                            " self.y += self.direction_y * self.speed\n" +
+                            " # \n" +
+                            "检测球是否碰到上下边界\n" +
+                            "if self.y <= 0 or self.y >= self.screen_height - self.height:\n" +
+                            " self.direction_y *= -1\n" +
+                            " def check_collision_with_paddle(self, paddle):\n" +
+                            " # \n" +
+                            "检测球是否碰到挡板\n" +
+                            "if (self.x <= paddle.x + paddle.width and\n" +
+                            " self.x + self.width >= paddle.x and\n" +
+                            " self.y <= paddle.y + paddle.height and\n" +
+                            " self.y + self.height >= paddle.y):\n" +
+                            " self.direction_x *= -1\n" +
+                            " def reset_position(self):\n" +
+                            " # \n" +
+                            "重置球的位置和⽅向\n" +
+                            "self.x = self.screen_width // 2\n" +
+                            " self.y = self.screen_height // 2\n" +
+                            " self.direction_x = random.choice([-1, 1])\n" +
+                            " self.direction_y = random.choice([-1, 1])\n" +
+                            " def draw(self, screen):\n" +
+                            " # \n" +
+                            "在屏幕上绘制球\n" +
+                            "pygame.draw.rect(screen, (255, 255, 255), (self.x, self.y, self.width, \n" +
+                            "self.height))",
+                        lan:"python"
+                        },
+                    ]
+                    },
+
+                ]
+                }
+            ],
+           
+        },
+        updated() {
+                this.highlightCode();
+                    // 创建一个空数组来存放所有的 textarea 元素
+                let textareas = [];
+                // 使用 $refs 对象来获取所有 textarea，并放入数组中
+                this.$nextTick(() => {
+                    Object.keys(this.$refs).forEach(ref => {
+                        if (ref.startsWith('t') || ref.startsWith('c')) {
+                            this.adjustSize(this.$refs[ref][0]);
+                        } else if (ref.startsWith('all')) {
+                            let parts = ref.split('-');
+                            this.laover(parseInt(parts[1]))
+                        }
+                    });
+                })
+            },
+        mounted() {
+                // 使用 $refs 对象来获取所有 textarea，并放入数组中
+                Object.keys(this.$refs).forEach(ref => {
+                    if (ref.startsWith('t')||ref.startsWith('c')) {
+                        this.adjustSize(this.$refs[ref][0]);
+                    }else if(ref.startsWith('all')){
+                        let parts = ref.split('-');
+                        this.adjustalln(this.$refs[ref][0])
+                        this.projects[currentProjectIndex].messages[parts[1]].componentHeight = this.$refs[ref][0].getBoundingClientRect().height;
+                        this.laover(parseInt(parts[1]))
+
+                    }
+                });
+                this.$nextTick(() => {
+                    Prism.highlightAll();
+                });
+                window.addEventListener('message', this.handleMessage);
+            },
+        beforeDestroy() {
+            window.removeEventListener('message', this.handleMessage);
+        },
+        watch: {
+            code() {
+                this.$nextTick(() => {
+                this.highlightCode();
+                });
+            }
+        },
+        methods: {
+            renameProject(index) {
+                this.projects[index].newName = this.projects[index].name; // 初始化 newName 为当前名称
+                this.projects[index].editing = true;
+            },
+            finishEditing(index) {
+                const trimmedName = this.projects[index].newName.trim();
+                if (trimmedName !== '') {
+                    this.projects[index].name = trimmedName;
+                }
+                this.projects[index].editing = false; // 无论是否为空都结束编辑模式
+            },
+            // 新建项目
+            addProject() {
+                const newProject = {
+                    name: `项目${this.projects.length + 1}`,
+                    messages: [
+                        {
+                            innitial:0,
+                            resizing: false,
+                            startY: 0,
+                            startHeight: 0,
+                            componentHeight: 1000,
+                            collapsed:false,
+                            id:0,
+                            rawsegments:[],
+                            segments:[],
+                            cooksegments:[],
+                        }
+                        // 初始消息结构可以与现有项目的初始消息相同
+                    ]
+                };
+                this.projects.push(newProject);
+                this.currentProjectIndex = this.projects.length - 1;
+            },
+            // 删除项目
+            deleteProject(index) {
+                if (this.projects.length > 1) {
+                    this.projects.splice(index, 1);
+                    if (this.currentProjectIndex >= index) {
+                        this.currentProjectIndex = Math.max(0, this.currentProjectIndex - 1);
+                    }
+                } else {
+                    alert("至少需要保留一个项目");
+                }
+            },
+            // 切换项目
+            switchProject(index) {
+                this.currentProjectIndex = index;
+            },
+            toggleSidebar() {
+                    this.sidebarVisible = !this.sidebarVisible;
+            },
+            makfile(index,num,number){
+                if(number === 0) {
+                    vscode.postMessage({
+                        command: 'makefile',
+                        con: this.projects[currentProjectIndex].messages[index].rawsegments[num].content,
+                        lan:this.projects[currentProjectIndex].messages[index].rawsegments[num].lan,
+                    })
+                }else if(number === 1){
+                    vscode.postMessage({
+                        command: 'makefile',
+                        con: this.projects[currentProjectIndex].messages[index].segments[num].content,
+                        lan:this.projects[currentProjectIndex].messages[index].segments[num].lan,
+                    })
+                }else{
+                    vscode.postMessage({
+                        command: 'makefile',
+                        con: this.projects[currentProjectIndex].messages[index].cooksegments[num].content,
+                        lan:this.projects[currentProjectIndex].messages[index].cooksegments[num].lan,
+                    })
+                }
+
+            },
+            copyToClipboard(index,num,number){
+                if(number === 0) {
+                    const textToCopy = this.projects[currentProjectIndex].messages[index].rawsegments[num].content;
+                    navigator.clipboard.writeText(textToCopy)
+                      .then(() => {
+                        console.log('Text copied to clipboard');
+                      })
+                      .catch(err => {
+                        console.error('Error copying text: ', err);
+                      });
+                }else if(number === 1){
+                    const textToCopy = this.projects[currentProjectIndex].messages[index].segments[num].content;
+                    navigator.clipboard.writeText(textToCopy)
+                      .then(() => {
+                        console.log('Text copied to clipboard');
+                      })
+                      .catch(err => {
+                        console.error('Error copying text: ', err);
+                      });
+                }else{
+                    const textToCopy = this.projects[currentProjectIndex].messages[index].cooksegments[num].content;
+                    navigator.clipboard.writeText(textToCopy)
+                      .then(() => {
+                        console.log('Text copied to clipboard');
+                      })
+                      .catch(err => {
+                        console.error('Error copying text: ', err);
+                      });
+                }
+
+            },
+            laover(index){
+                var textar = "all"+ '-'+index
+                const te = this.$refs[textar][0];
+                // 设置相关元素的底部对齐
+                var la = "la"+ '-'+index
+                const l = this.$refs[la][0];
+                const teRect = te.getBoundingClientRect(); // 获取 textarea 的位置信息
+                l.style.top = (teRect.top + teRect.height)+'px'; // 计算 l 元素与视窗底部的距离
+
+            },
+            startResize(event,index) {
+                const item = this.projects[currentProjectIndex].messages.find(item => item.id === index);
+                this.projects[currentProjectIndex].messages[index].resizing = true;
+                this.projects[currentProjectIndex].messages[index].startY = event.clientY;
+                this.projects[currentProjectIndex].messages[index].startHeight = this.projects[currentProjectIndex].messages[index].componentHeight;
+
+                document.addEventListener('mousemove', (event) => this.resize(event, item,index));
+                document.addEventListener('mouseup', () => this.stopResize(item));
+            },
+            resize(event,item,index) {
+                if (item.resizing) {
+                    const deltaY = event.clientY - item.startY;
+                    this.$set(item, 'componentHeight', Math.min(item.startHeight + deltaY,800));
+                    this.laover(index)
+                    if(item.componentHeight === 800){
+                        this.$refs["all-" + index][0].style.overflowY = "auto"
+                    }
+                }
+            },
+            stopResize(item) {
+                item.resizing = false;
+                document.removeEventListener('mousemove', this.resize);
+                document.removeEventListener('mouseup', this.stopResize);
+                this.$forceUpdate();
+
+            },
+            toggleCollapse(index) {
+                const item = this.projects[currentProjectIndex].messages.find(item => item.id === index);
+
+                if (item) {
+                    this.$set(item, 'collapsed', !item.collapsed);
+                    if(item.collapsed) {
+                        item.initialize = item.componentHeight
+                        var a = "all" +'-'+ index
+                        const all =  this.$refs[a][0];
+                        all.style.height = 'auto';
+                    }else{
+                        this.$nextTick(() => {
+                            var a = "all" +'-'+ index
+                            const all =  this.$refs[a][0];
+                            this.$set(item, 'componentHeight',item.initialize );
+                            all.style.height = item.initialize + 'px'
+                            this.laover(index)
+                        })
+                    }
+
+                }
+
+                if(item.collapsed){
+                    this.reload(index)
+                }else{
+                    this.$nextTick(() => {this.reload(index)})
+                }
+
+            },
+            reload(index){
+                    this.projects[currentProjectIndex].messages[index].rawsegments.forEach((item,itemIndex) => {
+                        if(item.type === "code") {
+                            var te = 'c1-' + index + '-' + itemIndex
+                            console.log(te)
+                            const textarea = this.$refs[te][0];
+                            if (textarea) {
+                                const highlightedHtml = Prism.highlight(textarea.innerText.trim(), Prism.languages[this.projects[currentProjectIndex].messages[index].rawsegments[itemIndex].lan]);
+                                textarea.innerHTML = highlightedHtml
+                            }
+                        }
+                    });
+                    this.projects[currentProjectIndex].messages[index].segments.forEach((item,itemIndex) => {
+                        if(item.type === "code") {
+                            var te = 'c2-' + index + '-' + itemIndex
+                            const textarea = this.$refs[te][0];
+                            if (textarea) {
+                                const highlightedHtml = Prism.highlight(textarea.innerText.trim(), Prism.languages[this.projects[currentProjectIndex].messages[index].segments[itemIndex].lan]);
+                                textarea.innerHTML = highlightedHtml
+                            }
+                        }
+                    });
+                    this.projects[currentProjectIndex].messages[index].cooksegments.forEach((item,itemIndex) => {
+                        if(item.type === "code") {
+                            var te = 'c3-' + index + '-' + itemIndex
+                            const textarea = this.$refs[te][0];
+                            if (textarea) {
+                                const highlightedHtml = Prism.highlight(textarea.innerText.trim(), Prism.languages[this.projects[currentProjectIndex].messages[index].cooksegments[itemIndex].lan]);
+                                textarea.innerHTML = highlightedHtml
+                            }
+                        }
+                    });
+
+            },
+            highlightCode() {
+                Prism.highlightAll();
+            },
+            a1(index,num){
+            var textar = "t1"+ '-'+index +'-'+num
+            const textarea = this.$refs[textar][0];
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            a2(index,num){
+            var textar = "c1"+ '-'+index+'-'+num
+            const textarea = this.$refs[textar][0];
+            this.projects[currentProjectIndex].messages[index].rawsegments[num].content = textarea.innerText.trim()
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            b1(index,num){
+            var textar = "t2"+ '-'+index +'-'+num
+                const textarea = this.$refs[textar][0];
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            b2(index,num){
+            var textar = "c2"+'-'+ index+'-'+num
+                const textarea = this.$refs[textar][0];
+                this.projects[currentProjectIndex].messages[index].segments[num].content = textarea.innerText.trim()
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            d1(index,num){
+            var textar = "t3"+ '-'+index +'-'+num
+                const textarea = this.$refs[textar][0];
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            d2(index,num){
+            var textar = "c3"+ '-'+index+'-'+num
+            const textarea = this.$refs[textar][0];
+            this.projects[currentProjectIndex].messages[index].cooksegments[num].content = textarea.innerText.trim()
+            this.adjustSize(textarea)
+            this.adjustall(index)
+        },
+            adjustalln(te){
+                te.style.height = 'auto';  // 先重置高度，允许它根据内容调整
+                te.style.height = Math.min(te.getBoundingClientRect().height,800)  + 'px';  // 设置为内容的实际高度
+                if(te.style.height === '800px'){
+                    te.style.overflowY='auto'
+                }
+                // 设置相关元素的底部对齐
+            },
+            adjustall(index){
+
+                var textar = "all"+ '-'+index
+                const te = this.$refs[textar][0];
+                this.adjustalln(te)
+                this.laover(index)
+
+            },
+            adjustSize(textarea) {
+
+                if(textarea) {
+                    textarea.style.height = 'auto';  // 先重置高度，允许它根据内容调整
+                    textarea.style.height = textarea.scrollHeight  + 'px';  // 设置为内容的实际高度
+                }
+
+            },
+            makeask(){
+                this.$set(this,'chat',!this.chat)
+            },
+            merge(index,num){
+                this.wh = num
+                this.whme = index
+                this.askaiport()
+            },
+            ask(){
+                this.askaiport()
+            },
+            askaiport(){
+                if(this.wh === 1) {//询问需求问题
+                    // 初始化一个变量来存储总和
+                    let res = "";
+                    // 循环遍历字典数组
+                    this.projects[currentProjectIndex].messages[this.whme].rawsegments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.content) {
+                        res += item.content;
+                      }
+                    });
+                    console.log("send"+res+this.askcon)
+                    vscode.postMessage({
+                        command: 'chat',
+                        text: res,
+                        need: this.askcon,
+                    })
+                }else if(this.wh === 2){
+                    // 初始化一个变量来存储总和
+                    let res = "";
+                    // 循环遍历字典数组
+                    this.projects[currentProjectIndex].messages[this.whme].segments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.content) {
+                        res += item.content;
+                      }
+                    });
+                    console.log("send"+res+this.askcon)
+                    vscode.postMessage({
+                        command: 'chat',
+                        text: res,
+                        need: this.askcon,
+                    })
+                }else if(this.wh === 3){
+                    let res = "";
+                    this.projects[currentProjectIndex].messages[this.whme].cooksegments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.content) {
+                        res += item.content;
+                      }
+                    });
+                    console.log("send"+res+this.askcon)
+                    vscode.postMessage({
+                        command: 'chat',
+                        text: res,
+                        need: this.askcon,
+                    })
+                }else if(this.wh === 4){
+                    // 初始化一个变量来存储总和
+                    let res = "";
+                    // 循环遍历字典数组
+                    this.projects[currentProjectIndex].messages[this.whme].rawsegments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.content) {
+                        res += item.content;
+                      }
+                    });
+                    console.log("send"+res+"以上面所有文字作为需求，帮我生成这段需求的伪代码")
+                    vscode.postMessage({
+                        command: 'chat',
+                        text: res,
+                        need: "以上面所有文字作为需求，帮我生成这段需求的伪代码",
+                    })
+                }else{
+                    // 初始化一个变量来存储总和
+                    let res = "";
+                    // 循环遍历字典数组
+                    this.projects[currentProjectIndex].messages[this.whme].segments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.content) {
+                        res += item.content;
+                      }
+                    });
+                    console.log("send"+res+"使用上文中的伪代码，帮我生成这段伪代码的正式可以运行的代码")
+                    vscode.postMessage({
+                        command: 'chat',
+                        text: res,
+                        need: "使用上文中的伪代码，帮我生成这段伪代码的正式可以运行的代码",
+                    })
+                }
+            },
+        chata(index,num){
+            this.makeask();
+            if(this.wh !== num + 1||this.whme !== index){
+                this.askcon = ""
+            }
+            this.wh = num + 1;
+            this.whme = index
+            this.$nextTick(() => {
+                console.log(this.chat)
+                const l = "all-" + index
+                const a = this.$refs[l][0].getBoundingClientRect()
+                const aichat = this.$refs.askai;
+                console.log(aichat)
+                aichat.style.top = `${a.top}px`
+                let n = num*33 + 1;
+                let str = n.toString();
+                aichat.style.left = `${str}%`
+                console.log(a.top)
+                console.log(aichat.style.top)
+            })
+        },
+
+        handleMessage(event) {
+            const message = event.data; // The JSON data our extension sent
+            //listen
+            switch (message.command) {
+                case 'rechat':
+                    console.log("result" )
+                    console.log(message.segments)
+                    message.segments.forEach(item => {
+                      // 检查每个字典中的key为content的值，并加到sum中
+                      if (item.type === "code"&&!item.lan) {
+                        item.lan = "java"
+                      }
+                    });
+                    if(this.wh === 1) {//询问需求问题
+                        const item = this.projects[currentProjectIndex].messages.find(item => item.id === this.whme);
+                        this.$set(item, 'rawsegments', message.segments);
+                    }else if(this.wh === 2){
+                        const item = this.projects[currentProjectIndex].messages.find(item => item.id === this.whme);
+                        this.$set(item, 'segments', message.segments);
+                    }else if(this.wh === 3){
+                        const item = this.projects[currentProjectIndex].messages.find(item => item.id === this.whme);
+                        this.$set(item, 'cooksegments', message.segments);
+                    }else if(this.wh === 4){
+                        const item = this.projects[currentProjectIndex].messages.find(item => item.id === this.whme);
+                        this.$set(item, 'segments', message.segments);
+                    }else{
+                        const item = this.projects[currentProjectIndex].messages.find(item => item.id === this.whme);
+                        this.$set(item, 'cooksegments', message.segments);
+                    }
+                    break;
+                    // 你可以在这里添加更多的case来处理其他命令
+
+            }
+        },
+        rawchinese(){
+            //向扩展传信息
+            let num  = this.projects[currentProjectIndex].messages.length +1;
+            console.log(this.chinese);
+            this.projects[currentProjectIndex].messages.push({text: this.chinese,
+                        id:this.projects[currentProjectIndex].messages.length,
+                        rawsegments:[{type:"text",content:this.chinese}],innitial:0,
+                        resizing: false,
+                        startY: 0,
+                        startHeight: 0,
+                        componentHeight: 1000,
+                        collapsed:false,})
+            this.chinese = "";
+        },
+        handlepseudocode(data) {
+            this.pseudocode = data;
+        },
+        closemodel(index) {
+            if (confirm("确定要删除这条消息吗？")) {
+                this.projects[currentProjectIndex].messages.splice(index, 1);
+            }
+        },
+        },
+
+    });
+    // Handle the message inside the webview
+
+    // function savePos(textBox){
+    //     var caret = getCaretCoordinates(textBox, textBox.selectionEnd);
+    //     var selection = window.getSelection().toString().trim();
+    //     var range = window.getSelection().getRangeAt(0);
+    //     var rect = range.startContainer.getBoundingClientRect();
+    //     if (selection !== '') {
+    //         var tooltip = document.getElementById("tooltip");
+    //         //tooltip.innerHTML = "特殊处理内容：" + selection; // 设置注释框的内容
+    //         // 设置注释框的位置，可以根据需要调整偏移量
+    //         tooltip.style.top = caret.top + rect.top + window.scrollY + "px";
+    //         tooltip.style.left = caret.left + rect.left+  window.scrollX +"px";
+    //         tooltip.style.display = "block"; // 显示注释框
+    //     } else {
+    //         document.getElementById("tooltip").style.display = "none";
+    //     }
+    // }
+
+    // function ad(event){
+    //    setTimeout(() => {
+    //         // 获取鼠标移入
+    //         var target = event.target;
+    //
+    //         var selection = window.getSelection().toString().trim();
+    //
+    //         if(selection !== '') {
+    //             var range = window.getSelection().getRangeAt(0);
+    //             var rect = range.startContainer;
+    //             console.log(rect)
+    //
+    //             console.log(target)
+    //             // 执行你的操作，例如禁用子节点的事件响应
+    //             if (rect.isSameNode(target)||target.contains(rect)||rect.contains(target)) {
+    //                 document.getElementById("tooltip").style.display = "block";
+    //             }
+    //         }
+    //     }, 100);
+    // }
+    // function de(event){
+    //     var target = event.relatedTarget;
+    //     // 执行你的操作，例如禁用子节点的事件响应
+    //     document.getElementById("tooltip").style.display = "none";
+    // }
+
+
+
+
+    // // Function to copy textarea content to clipboard
+    // function copyToClipboard(textarea) {
+    //     textarea.select();
+    //     document.execCommand('copy');
+    //     window.getSelection().removeAllRanges(); // Clear selection
+    // }
+    // // 找到按钮元素生成伪代码
+    // const button1 = document.getElementById('b1');
+    // // 添加点击事件监听器
+    // button1.addEventListener('click', function() {
+    //     var textarea = document.getElementById("t1");
+    //     var content = textarea.value;
+    //     vscode.postMessage({
+    //         command: 'pseudo code',
+    //         text: content
+    //     })
+    // });
+    // // 找到按钮元素生成正常的代码
+    // const button2 = document.getElementById('b2');
+    //
+    // button2.addEventListener('click', function() {
+    //     var textarea = document.getElementById("t2");
+    //     var content = textarea.value;
+    //     vscode.postMessage({
+    //         command: 'code',
+    //         text: content
+    //     })
+    // });
+    // // 检查代码有没有语法错误
+    // const button3 = document.getElementById('b3');
+    // button3.addEventListener('click', function() {
+    //     var textarea = document.getElementById("t3");
+    //     var content = textarea.value;
+    //     vscode.postMessage({
+    //         command: 'check',
+    //         text: content
+    //     })
+    // });
+</script>
+
+
+</html>
