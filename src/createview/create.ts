@@ -20,6 +20,11 @@ import * as JSON5 from 'json5';
     functionality: string[];
     pseudoCode:string;
   }
+  function removeExtension(filename:string, extension:string) {
+    const regex = new RegExp(`${extension}$`);
+    return filename.replace(regex, '');
+  }
+
 
 // 实现 Webview 视图提供者接口，以下内容都是 chatGPT 提供
 class MyWebviewViewProvider implements vscode.WebviewViewProvider {
@@ -42,12 +47,30 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
     
     //收消息
     webviewView.webview.onDidReceiveMessage(
-      
       message => {
+        const alarmManagementCode: string = `
+        do for all sensors
+            invoke checkSensor procedure returning signalValue
+            if signalValue > bound[alarmType] then
+                phone.message = message[alarmType]
+                set alarmBell to "on" for alarmTimeSeconds
+                set system status = "alarmCondition"
+                
+                parbegin
+                    invoke alarm procedure with "on", alarmTimeSeconds
+                    invoke phone procedure set for alarmType, phoneNumber
+                parend
+            else
+                skip
+            endif
+        end do for
+        end alarmManagement
+        `;
         switch (message.command) {
           case 'updateproject':
             (async () => {
-              const res = await askAI(message.con + "下面是你输出的具体要求：你回答的内容中所有冒号都采用英文冒号:，你回答的格式采用每个模块的格式严格按照###Module:Moudule name,@@@ablility:Moudule ability,&&&Pseudocode:```Pseudocode content```，回答内容都是用英文。下面是具体操作，你首先需要把这个项目分成模块，模块的具体的个数要根据需求的难易程度来衡量，项目越难分出的模块越多，项目越复杂分出的模块越少,无论你分成多少模块，他们组成的都应该是完整的项目。最终的结果以模块为单位返回，每个模块中包含模块名字(模块名字中不允许出现空格)，实现的功能（功能只需要文字叙述即可）和伪代码（伪代码具体内容使用```包围,伪代码采用自然语言不要使用代码语言！！），在每个模块中的名字部分的开头加上'###'，每个模块中的功能部分的开头加上'@@@'，每个模块伪代码部分的开头加上'&&&'。",message.index);
+
+              const res = await askAI(message.con + "下面是你输出的具体要求：你回答的内容中所有冒号都采用英文冒号:，你回答的格式采用每个模块的格式严格按照###Module:Moudule name,@@@ablility:Moudule ability,&&&Pseudocode:```Pseudocode content```，回答内容都是用英文。下面是具体操作，你首先需要把这个项目分成模块，模块的具体的个数要根据需求的难易程度来衡量，项目越难分出的模块越多，项目越复杂分出的模块越少,无论你分成多少模块，他们组成的都应该是完整的项目。最终的结果以模块为单位返回，每个模块中包含模块名字(模块名字中不允许出现空格)，实现的功能（功能只需要文字叙述即可不超过10个字的简要描述）和伪代码（伪代码具体内容使用```包围"+ `学习下面的伪代码的例子,然后按照我的需求生成对应的伪代码.example:${alarmManagementCode}`+"），在每个模块中的名字部分的开头加上'###'，每个模块中的功能部分的开头加上'@@@'，每个模块伪代码部分的开头加上'&&&'。",message.index);
               //const res = '### 模块名：游戏初始化@@@ 功能：初始化游戏棋盘和玩家信息&&& 伪代码：```function initializeGame():    创建一个空的五子棋棋盘    初始化玩家1和玩家2的名称    将当前回合设置为玩家1```### 模块名：绘制棋盘@@@ 功能：在控制台上绘制当前状态的五子棋棋盘&&& 伪代码：```function drawBoard(board):    for each 行 in board:        for each 列 in 行:            if 列有落子:                打印对应的落子颜色符号（如黑方格B，白方格W）            else:                打印未落子标记（如空方格.）        打印换行符```### 模块名：下棋逻辑  @@@ 功能：“人机对战”模式下实现人类玩家和AI完成自己所选位置出成功能，并判断胜利条件是否达成。&&& 伪代码：```function makeMove(player, row, col):    if (row, col) 不是有效位置或者已经被落子了：        返回无效移动            如果 player 不是当前回合玩家：        返回轮到其他玩家提示       在指定位置(row, col)处放置player的棋子       如果检查连续相同颜色的任意直线中存在五个以上连续相同颜色则结束游戏并宣布胜利者；      下一步将执行AI行动；          更新轮到下一个回合              ```### 模块名：主函数调用@@@ 功能: 调用上述模块组成完整游戏程序流程，让用户持续循环进行操作(输入行/列)&&& 伪代码：``` function main():     初始化游戏          while 游戏没有结束:         绘制当前状态的五子棋盘                 提示当前回合是哪位玩家（如果是AI，则显示AI正在思考...）                 接收用户输入选择                             如果输入选择为退出，则结束循环且宣布退出。                          否则，                              解析用户输入，得到需要放置的位置                                     根据解析结果调用“下棋逻辑”模块来进行处理                     游戏结束时打印最后结果  main()```undefined'
               const segments : Module[] = extractCodeAndText(res);
 
@@ -379,7 +402,70 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
                 await fs.remove(FilePath2);
             })();	
             webviewView.webview.postMessage({});
-          }
+          
+          case 'addproject':
+            (async () => {
+              const model = vscode.workspace.getConfiguration('ai').get('propath') + ""
+              const result: Module[] = [];
+              const a: { con: string; name: string }[] = [];
+              const language = vscode.workspace.getConfiguration('ai').get('language') + "";
+              const fileExtension: string = getFileExtension(language);
+              // 读取目录中的所有文件
+              fs.readdirSync(model).forEach(file => {
+                  const filePath = path.join(model, file);
+                  
+                  // 检查是否为文件
+                  if (fs.statSync(filePath).isFile() && file.endsWith(fileExtension)) {
+                      // 读取文件内容
+                      const content = fs.readFileSync(filePath, 'utf-8');
+                      a.push({ con: content, name: file });
+                  }
+              });
+              const mod = vscode.workspace.getConfiguration('ai').get('path') + ""
+              const patha = path.join(mod, message.index.replace(/:/g, '-'));
+              if (!fs.existsSync(patha)) {
+                fs.mkdirSync(patha, { recursive: true });
+              }
+              for (const se of a) {
+                const res = await askAI(se.con + "下面是你输出的具体要求：你回答的内容中所有冒号都采用英文冒号:，你回答的格式采用每个模块的格式严格按照###Module:Moudule name,@@@ablility:Moudule ability,&&&Pseudocode:```Pseudocode content```，回答内容都是用英文。下面是具体操作，你首先需要理解这个代码，然后，给这段代码起一个文件名(名字中不允许出现空格)，说明它实现的功能（功能只需要文字叙述即可不超过10个字的简要描述）和这段代码对应的伪代码（伪代码具体内容使用```包围"+`学习下面的伪代码的例子,然后按照我的需求生成对应的伪代码.example:${alarmManagementCode}` +"），在名字部分的开头加上'###'，功能部分的开头加上'@@@'，伪代码部分的开头加上'&&&'。",message.index);
+                let segments : Module = extractCodeAndText(res)[0];
+                
+                const re = removeExtension(se.name, fileExtension); // result: "example"
+                segments.module = re
+                result.push(segments)
+
+              }
+              projects.push({id:message.index,name:message.index,segments:[]})
+              //const res = '### 模块名：游戏初始化@@@ 功能：初始化游戏棋盘和玩家信息&&& 伪代码：```function initializeGame():    创建一个空的五子棋棋盘    初始化玩家1和玩家2的名称    将当前回合设置为玩家1```### 模块名：绘制棋盘@@@ 功能：在控制台上绘制当前状态的五子棋棋盘&&& 伪代码：```function drawBoard(board):    for each 行 in board:        for each 列 in 行:            if 列有落子:                打印对应的落子颜色符号（如黑方格B，白方格W）            else:                打印未落子标记（如空方格.）        打印换行符```### 模块名：下棋逻辑  @@@ 功能：“人机对战”模式下实现人类玩家和AI完成自己所选位置出成功能，并判断胜利条件是否达成。&&& 伪代码：```function makeMove(player, row, col):    if (row, col) 不是有效位置或者已经被落子了：        返回无效移动            如果 player 不是当前回合玩家：        返回轮到其他玩家提示       在指定位置(row, col)处放置player的棋子       如果检查连续相同颜色的任意直线中存在五个以上连续相同颜色则结束游戏并宣布胜利者；      下一步将执行AI行动；          更新轮到下一个回合              ```### 模块名：主函数调用@@@ 功能: 调用上述模块组成完整游戏程序流程，让用户持续循环进行操作(输入行/列)&&& 伪代码：``` function main():     初始化游戏          while 游戏没有结束:         绘制当前状态的五子棋盘                 提示当前回合是哪位玩家（如果是AI，则显示AI正在思考...）                 接收用户输入选择                             如果输入选择为退出，则结束循环且宣布退出。                          否则，                              解析用户输入，得到需要放置的位置                                     根据解析结果调用“下棋逻辑”模块来进行处理                     游戏结束时打印最后结果  main()```undefined'
+              let project = projects.find(project => project.id === message.index);
+
+              if(project){
+                const basePath = path.join(mod, project.name.replace(/:/g, '-'));
+                project.segments = [];
+                result.forEach((segment,index) => {
+
+                  project.segments.push({name:segment.module,id:new Date().toISOString()})
+                  const fileName = `${segment.module}.txt`;
+                  const filePath = path.join(basePath, fileName);
+                  const content = segment.pseudoCode;
+                  const language = vscode.workspace.getConfiguration('ai').get('language') + "";
+                  const fileExtension: string = getFileExtension(language);
+                  const filePath1 = path.join(basePath,segment.module + fileExtension);
+                  const content1 = `${a[index].con}`;
+                  try {
+                      // 创建文件并写入内容
+                      fs.writeFileSync(filePath, content);
+                      fs.writeFileSync(filePath1, content1);
+                      console.log(`文件 "${fileName}" 已创建并写入内容。`);
+                  } catch (error) {
+                      console.error(`创建文件 "${fileName}" 时出错: ` + error);
+                  }
+
+                });
+                webviewView.webview.postMessage({ command: 'addproject' ,segments:project.segments,ability:result,id:message.index});
+              }
+            })();	
+        }
       },
       undefined,
       this.context.subscriptions
@@ -553,6 +639,7 @@ export async function createwebview(context: vscode.ExtensionContext) {
         })();
 
       }),
+      //todo
       vscode.commands.registerCommand('CodeToolBox.code', () => {
         (async () => {
           webviewViewProvider?.disable()
@@ -578,7 +665,8 @@ export async function createwebview(context: vscode.ExtensionContext) {
           if(project){
             res =  await askAI(content + `上面的内容是你之前帮我生成一个模块中的伪代码，结合整个项目的需求，完成这个模块为一个类注意，你只需要⽣成该模块的代码，不需要考虑其他模块，并请根据上面的伪代码，生成他的${fileExtension}代码。最终的结果只有代码不要包含其他信息，我要把它写入到名字为${filename}的文件中`,project.id)
           }
-
+          //todo
+          
           try {
             // 创建文件并写入内容
             fs.writeFileSync(filename, ex(res).content);

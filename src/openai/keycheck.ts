@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
-import ChatCompletionCreateParamsBase from "openai";
-import OpenAI from "openai";
-import  ChatCompletionRequestMessage from "openai";
-import  Configuration from "openai";
 
-let openai : OpenAI | undefined  = undefined;
+const { AzureOpenAI } = require("openai");
+
+// Load the .env file if it exists
+const dotenv = require("dotenv");
+dotenv.config();
+
+let openai :  typeof  AzureOpenAI  | undefined  = undefined;
 
 
 // 定义项目的接口
@@ -32,11 +34,14 @@ export async function showInputBox() {
               return 'API 密钥不能为空';
           }
           try {
-                openai = new OpenAI({
-                    apiKey:text,
-                    baseURL: "https://api.xiaoai.plus/v1",
-                });
-                await openai.models.list(); // 尝试列出模型来验证 API 密钥
+                // You will need to set these environment variables or edit the following values
+                const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://mygavin.openai.azure.com/";
+                const apiKey = process.env["AZURE_OPENAI_API_KEY"] || text;
+                const apiVersion = "2024-02-01";
+                openai = new AzureOpenAI({ endpoint, apiKey, apiVersion });  
+                if(openai){
+                    await openai.models.list(); // 尝试列出模型来验证 API 密钥
+                }
           } catch(err) {
               return '您的 API 密钥无效';
           }
@@ -57,11 +62,14 @@ export async function showInputBox() {
  */
 async function validateAPIKey() {
     try {
-        openai = new OpenAI({
-            apiKey:vscode.workspace.getConfiguration('ai').get('ApiKey'),
-            baseURL: "https://api.xiaoai.plus/v1",
-        });
-        await openai.models.list(); // 尝试列出模型来验证 API 密钥
+        // You will need to set these environment variables or edit the following values
+        const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://mygavin.openai.azure.com/";
+        const apiKey = process.env["AZURE_OPENAI_API_KEY"] || vscode.workspace.getConfiguration('ai').get('ApiKey');
+        const apiVersion = "2024-02-01";
+        openai = new AzureOpenAI({ endpoint, apiKey, apiVersion });  
+        if(openai){
+            await openai.models.list(); // 尝试列出模型来验证 API 密钥
+        }
     } catch(err) {
         return false; // 验证失败
     }
@@ -79,10 +87,11 @@ export async function ask(context: vscode.ExtensionContext){
 
 	// 如果 OpenAI 实例未定义，则使用工作区设置中的 API 密钥创建 OpenAI 实例。
 	if (openai === undefined) {
-        openai = new OpenAI({
-            apiKey:vscode.workspace.getConfiguration('ai').get('ApiKey'),
-            baseURL: "https://api.xiaoai.plus/v1",
-        });
+        // You will need to set these environment variables or edit the following values
+        const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://mygavin.openai.azure.com/";
+        const apiKey = process.env["AZURE_OPENAI_API_KEY"] || vscode.workspace.getConfiguration('ai').get('ApiKey');
+        const apiVersion = "2024-02-01";
+        openai = new AzureOpenAI({ endpoint, apiKey, apiVersion });  
 	}
     // // 注册命令，用于向 Scribe AI 提出问题。
 	// context.subscriptions.push(vscode.commands.registerCommand('askAI',async (message) => {
@@ -128,32 +137,37 @@ export async function askAI(message:string,id:string) {
         }
 
         // 使用配置中的API密钥初始化openai实例
-        openai = new OpenAI({
-            apiKey:vscode.workspace.getConfiguration('ai').get('ApiKey'),
-            baseURL: "https://api.xiaoai.plus/v1",
-        });
+        // You will need to set these environment variables or edit the following values
+        const endpoint = process.env["AZURE_OPENAI_ENDPOINT"] || "https://mygavin.openai.azure.com/";
+        const apiKey = process.env["AZURE_OPENAI_API_KEY"] || vscode.workspace.getConfiguration('ai').get('ApiKey');
+        const apiVersion = "2024-02-01";
+        openai = new AzureOpenAI({ endpoint, apiKey, apiVersion });  
     }
     let res = "";
     // 根据选择的模型类型调用不同的OpenAI API生成响应
     if (model === "ChatGPT" || model === "gpt-4") {
         try {
-            const response = await openai.chat.completions.create({
-                model: (model === "ChatGPT" ? "gpt-3.5-turbo" : "gpt-4"), // 选择适当的ChatGPT模型版本
-                messages: chatGPTPrompt,
-                temperature: 0, // 控制生成文本的多样性，0表示尽可能精确
-                max_tokens: 2000, // 生成文本的最大长度
-                top_p: 1.0, // 采样的概率分布阈值
-                frequency_penalty: 1, // 控制生成文本中重复词语的频率
-                presence_penalty: 1, // 控制生成文本中主题相关词语的频率
-                stream: true // 启用流式传输
-            });
+            if(openai){
+                const prompt = ["When was Microsoft founded?"];
+                const response = await openai.chat.completions.create({
+                    model: (model === "ChatGPT" ? "gpt-35-turbo" : "Gavin_deployment"), // 选择适当的ChatGPT模型版本
+                    messages: chatGPTPrompt,
+                    temperature: 0, // 控制生成文本的多样性，0表示尽可能精确
+                    max_tokens: 2000, // 生成文本的最大长度
+                    top_p: 1.0, // 采样的概率分布阈值
+                    frequency_penalty: 1, // 控制生成文本中重复词语的频率
+                    presence_penalty: 1, // 控制生成文本中主题相关词语的频率
+                    stream: true // 启用流式传输
 
-            
-            let responseText = '';
-            for await (const chunk of response) {
-                responseText += chunk.choices[0]?.delta?.content;
+                });
+
+                
+                let responseText = '';
+                for await (const chunk of response) {
+                    responseText += chunk.choices[0]?.delta?.content;
+                }
+                res  = responseText
             }
-            res  = responseText
         } catch (error) {
             console.error('Error fetching streaming response:', error);
             return 'An error occurred. Please try again...';
