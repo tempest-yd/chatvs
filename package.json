@@ -1,0 +1,239 @@
+{
+  "name": "2002",
+  "displayName": "ChatVS",
+  "description": "a programme to help code via llm",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension",
+  "contributes": {
+    "configuration": {
+      "title": "AiProgram",
+      "properties": {
+        "ai.ApiKey": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "markdownDescription": "Your personal OpenAI API key. If you don't have one, generate a new one [here](https://beta.openai.com/account/api-keys).\n\nDon't forget to [restart your extension](command:workbench.action.reloadWindow) once you finished configuring so that your extension gets loaded with the new configurations."
+        },
+        "ai.models": {
+          "type": "string",
+          "default": "ChatGPT",
+          "enum": [
+            "text-davinci-003",
+            "ChatGPT",
+            "gpt-4",
+            "gpt-4o"
+          ],
+          "enumDescriptions": [
+            "GPT-3 models can understand and generate natural language.",
+            "Large language model trained by OpenAI that is optimized for dialogue.",
+            "Large language model that performs better than ChatGPT. Only available for people that have access to GPT4."
+          ],
+          "markdownDescription": "Choose the OpenAI model you want to use for generating your AI responses.\n\nYou can find more details about each model and their pricing [here](https://beta.openai.com/docs/models)."
+        },
+        "ai.path": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "markdownDescription": "Specify the local file path for your application. Example: D:\new"
+        },
+        "ai.language": {
+          "type": "string",
+          "default": "java",
+          "enum": [
+            "java",
+            "python",
+            "c++",
+            "c",
+            "javascript",
+            "typescript",
+            "html"
+          ],
+          "markdownDescription": "Programming language used in the generated code"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "CodeToolBox.chatGPTView",
+        "title": "chatGPT对话框"
+      },
+      {
+        "command": "askAI",
+        "title": "提问"
+      },
+      {
+        "command": "CodeToolBox.openChatGPTView",
+        "title": "打开chatGPT对话框"
+      },
+      {
+        "command": "CodeToolBox.hideChatGPTView",
+        "title": "关闭chatGPT对话框",
+        "icon": "$(close)"
+      },
+      {
+        "command": "CodeToolBox.openSetting",
+        "title": "设置",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "CodeToolBox.abilities",
+        "title": "generate description"
+      },
+      {
+        "command": "CodeToolBox.pseudocode",
+        "title": "generate pseudo code"
+      },
+      {
+        "command": "CodeToolBox.code",
+        "title": "generate code"
+      },
+      {
+        "command": "CodeToolBox.mergeall",
+        "title": "import all"
+      },
+      {
+        "command": "CodeToolBox.highlightNewContent",
+        "title": "Highlight New Content"
+      },
+      {
+        "command": "CodeToolBox.switchDisplay",
+        "title": "Switch Display Style"
+      },
+      {
+        "command": "CodeToolBox.confirmLine",
+        "title": "Confirm Line"
+      },
+      {
+        "command": "CodeToolBox.divideBlocks",
+        "title": "divide blocks"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "CodeToolBox",
+          "title": "CodeSketcher",
+          "icon": "images/tool.png",
+          "initialWidth": 10000
+        }
+      ]
+    },
+    "views": {
+      "CodeSketcher": [
+        {
+          "id": "CodeToolBox.welcome",
+          "name": "welcome",
+          "when": "!CodeToolBox.chatGPTView"
+        },
+        {
+          "type": "webview",
+          "id": "CodeToolBox.chatGPTView",
+          "name": "CodeSketcher",
+          "when": "CodeToolBox.chatGPTView"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "CodeToolBox.welcome",
+        "contents": "[打开CodeSketcher对话框](command:CodeToolBox.openChatGPTView)\n[设置](command:CodeToolBox.openSetting)"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "CodeToolBox.toolsMenu",
+        "label": "🤖 CodeSketcher"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "group": "navigation",
+          "submenu": "CodeToolBox.toolsMenu"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "CodeToolBox.switchDisplay",
+          "when": "resourceExtname == .java",
+          "group": "navigation"
+        }
+      ],
+      "CodeToolBox.toolsMenu": [
+        {
+          "command": "CodeToolBox.abilities"
+        },
+        {
+          "command": "CodeToolBox.pseudocode",
+          "when": "resourceLangId != plaintext"
+        },
+        {
+          "command": "CodeToolBox.divideBlocks",
+          "title": "divide blocks"
+        },
+        {
+          "command": "CodeToolBox.code",
+          "when": "resourceLangId == plaintext"
+        },
+        {
+          "command": "CodeToolBox.mergeall",
+          "when": "resourceLangId == plaintext"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "CodeToolBox.hideChatGPTView",
+          "when": "view == CodeToolBox.chatGPTView",
+          "group": "navigation@4"
+        },
+        {
+          "command": "CodeToolBox.openSetting",
+          "when": "view == CodeToolBox.chatGPTView",
+          "group": "navigation@3"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.91.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.4.1",
+    "@azure/openai": "^2.0.0-beta.2",
+    "azure-openai": "^0.9.4",
+    "dotenv": "^16.4.5",
+    "font-awesome": "^4.7.0",
+    "fs-extra": "^11.2.0",
+    "json5": "^2.2.3",
+    "openai": "^4.61.0",
+    "react": "^18.3.1",
+    "vsce": "^2.15.0",
+    "vscode": "^1.1.37",
+    "vscode-webview-tool": "^1.0.4",
+    "yarn": "^1.22.22"
+  }
+}
