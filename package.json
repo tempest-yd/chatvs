@@ -12,6 +12,7 @@
   "activationEvents": [],
   "main": "./out/extension",
   "contributes": {
+    
     "configuration": {
       "title": "AiProgram",
       "properties": {
@@ -84,11 +85,11 @@
       },
       {
         "command": "CodeToolBox.abilities",
-        "title": "generate description"
+        "title": "new pseudocode(Disabled)"
       },
       {
         "command": "CodeToolBox.pseudocode",
-        "title": "generate pseudo code"
+        "title": "new refinedpseudocode(Disabled)"
       },
       {
         "command": "CodeToolBox.code",
@@ -112,7 +113,7 @@
       },
       {
         "command": "CodeToolBox.divideBlocks",
-        "title": "divide blocks"
+        "title": "new moudle"
       }
     ],
     "viewsContainers": {
@@ -137,6 +138,10 @@
           "id": "CodeToolBox.chatGPTView",
           "name": "CodeSketcher",
           "when": "CodeToolBox.chatGPTView"
+        },
+        {
+          "id": "nodeDependencies",
+          "name": "Node Dependencies"
         }
       ]
     },
@@ -168,19 +173,23 @@
       ],
       "CodeToolBox.toolsMenu": [
         {
-          "command": "CodeToolBox.abilities"
+          "command": "CodeToolBox.abilities",
+          "enabled": false
         },
         {
           "command": "CodeToolBox.pseudocode",
           "when": "resourceLangId != plaintext"
+          
         },
         {
           "command": "CodeToolBox.divideBlocks",
-          "title": "divide blocks"
+          "title": "Generate the pseudocode for the next level.(Disabled)"
+
         },
         {
           "command": "CodeToolBox.code",
           "when": "resourceLangId == plaintext"
+          
         },
         {
           "command": "CodeToolBox.mergeall",

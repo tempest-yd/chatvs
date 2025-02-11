@@ -27,7 +27,7 @@ export async function showInputBox() {
         ignoreFocusOut: true,
         placeHolder: 'Your OpenAI API Key', // 输入框占位符
         title: 'CodeAI', // 输入框标题
-        prompt: '您尚未设置 OpenAI API 密钥，或者您输入的 API 密钥不正确，请输入正确的 API 密钥以使用 CodeAI 扩展。', // 提示信息
+        prompt: '您尚未设置123456 ', // 提示信息
         validateInput: async text => {
             vscode.window.showInformationMessage(`正在验证: ${text}`);
             if (text === '') {
