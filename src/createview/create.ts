@@ -14,6 +14,7 @@ import * as JSON5 from 'json5';
 import { decontext } from "../openai/keycheck"
 // 创建一个 webview 视图
 let webviewViewProvider: MyWebviewViewProvider | undefined;
+let fileDecorations: { [key: string]: boolean } = {};
 // 获取扩展的根路径
 // 遍历模块数组
 interface Module {
@@ -21,6 +22,17 @@ interface Module {
   functionality: string[];
   pseudoCode: string;
 }
+
+interface TempModule {
+  id: string;
+  content: string;
+}
+interface Project {
+  id: string;
+  name: string;
+  segments: Project [];
+}
+
 //保存代码差别
 interface Line {
   type: number;
@@ -37,6 +49,40 @@ function removeExtension(filename: string, extension: string) {
   return filename.replace(regex, '');
 }
 
+async function readPseudoFilesRecursively(folderPath: string): Promise<string[]> {
+  const files = await fs.promises.readdir(folderPath);
+  let pseudoFiles: string[] = [];
+
+  for (const file of files) {
+      const filePath = path.join(folderPath, file);
+      const stat = await fs.promises.stat(filePath);
+
+      if (stat.isDirectory()) {
+          // 递归调用
+          const nestedPseudoFiles = await readPseudoFilesRecursively(filePath);
+          pseudoFiles = pseudoFiles.concat(nestedPseudoFiles);
+      } else if (file.endsWith('.pseudo')) {
+          pseudoFiles.push(filePath);
+      }
+  }
+
+  return pseudoFiles;
+}
+
+function findProjectById(projects: Project[], id: string): Project | null {
+  console.log(projects);
+  for (const project of projects) {
+      if (project.id === id) {
+          return project; 
+      }
+      console.log(project.id+"不是要找的");
+      const foundInSegments = findProjectById(project.segments, id);
+      if (foundInSegments) {
+          return foundInSegments; 
+      }
+  }
+  return null; // Not found
+}
 
 function extractByTypeFromFile(filePath: string, typeValue: number): string {
   try {
@@ -138,6 +184,17 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
     //收消息
     webviewView.webview.onDidReceiveMessage(
       message => {
+        const firstLayerCode: string = `procedure addLetter(key):
+    if current line has less than 5 letters inputed:
+        add the corresponding letter into next tile
+
+procedure deleteLetter():
+    if current line has more than 0 letters inputed:
+        remove the letter of the current tile
+        
+procedure changeColor(position, color):
+	reset the element attribute of corresponding tile
+        `;
         const alarmManagementCode: string = `
         do for all sensors
             invoke checkSensor procedure returning signalValue
@@ -160,7 +217,6 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
           case "addnode":
             (async () => {
               //更改数据结构
-
               let project = projects.find(project => project.id === message.fatherid);
               if (project) {
                 project.segments.push({
@@ -252,6 +308,208 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
             })();
 
             return
+          case 'openfileandfolder':
+              (async () => {
+                console.log("openfileandfolder"+message.id)
+                const model = vscode.workspace.getConfiguration('ai').get('path') + ""
+
+                    const folderPath: string = path.join(model, message.id)
+                    const parentFolderPath = folderPath;
+                    console.log(`选中的文件夹路径: ${parentFolderPath}`);
+          
+                    try {
+                        const pseudoFiles = await readPseudoFilesRecursively(parentFolderPath);
+                        console.log(`筛选出的 .pseudo 文件: ${pseudoFiles.join(', ')}`);
+                        pseudoFiles.sort();
+          
+                        let content = '';
+          
+                        for (const filePath of pseudoFiles.filter(file => path.dirname(file) === parentFolderPath)) {
+                            console.log(`正在读取文件: ${filePath}`);
+                            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+                            content += `// --- 来源: ${path.basename(filePath)} ---\n${fileContent}\n\n`;
+                            console.log(`已读取文件: ${filePath}`);
+                        }
+          
+                        for (const filePath of pseudoFiles.filter(file => path.dirname(file) !== parentFolderPath)) {
+                            const isCollapsed = fileDecorations[filePath] === false;
+                            if (!isCollapsed) {
+                                const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+                                content += `// --- 来源: ${path.basename(filePath)} ---\n${fileContent}\n\n`;
+                            }
+                        }
+          
+                        const outputFilePath = path.join(parentFolderPath, 'display.pseudocode');
+                        await fs.promises.writeFile(outputFilePath, content);
+                        console.log(`已创建输出文件: ${outputFilePath}`);
+          
+                        const doc = await vscode.workspace.openTextDocument(outputFilePath);
+                        await vscode.window.showTextDocument(doc);
+                        console.log(`已在 VSCode 中打开输出文件`);
+                      } catch (error) {
+                          //console.error(`错误: ${error.message}`);
+                      }
+                  
+                })();
+                return;
+          /*case 'generateproject':
+            (async () => {
+                const res = await askAI(message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the response format should strictly follow each module's format as ###Module:Moudule name,@@@ability:Moudule ability. The response content should be in English. Here are the specific operations: First, you need to divide this project into modules, and the specific number of modules should be determined based on the difficulty of the requirements. The more difficult the project, the more modules should be divided. Regardless of how many modules you divide, they should form a complete project. The final result should be returned on a per-module basis, with each module containing the module name (no spaces allowed in the module name) and a description of the functionality (the description should be concise and no more than 10 words).", message.index);
+                
+                const segments: Module[] = extractCodeAndText(res);
+                decontext(message.index);
+                decontext(message.index);
+                
+                const model = vscode.workspace.getConfiguration('ai').get('path') + "";
+                let project = projects.find(project => project.id === message.index);
+                
+                if (project) {
+                    const basePath = path.join(model, project.name.replace(/:/g, '-'));
+                    project.segments = [];
+                    
+                    for (const segment of segments) {
+                      const moduleDir = path.join(basePath, segment.module);
+                      fs.mkdirSync(moduleDir, { recursive: true });
+                      const fileName = `${segment.module}.pseudo`;
+                      const filePath = path.join(moduleDir, fileName);
+                      try {
+                          const content = Array.isArray(segment.functionality) ? segment.functionality.join('\n') : segment.functionality;
+                          fs.writeFileSync(filePath, content);
+                          console.log(`文件 "${fileName}" 已创建并写入内容。`);
+                  
+                          const newSegmentProject = {
+                            id: moduleDir, 
+                            name: moduleDir + '/' + segment.module, 
+                            segments: []
+                          };
+                  
+                          project.segments.push(newSegmentProject);
+                      } catch (error) {
+                          console.error(`创建文件 "${fileName}" 时出错: ` + error);
+                      }
+                    }
+                    webviewView.webview.postMessage({ command: 'reupdateproject', segments: project.segments });
+                }
+            })();
+            return;*/
+          case 'generatepseudo':
+            (async () => {
+              const model = vscode.workspace.getConfiguration('ai').get('path') + "";
+              let project = findProjectById(projects, message.id);
+              console.log(message.id +":"+ project);
+              const fileName = path.join(model, message.id, message.id.substring(message.id.lastIndexOf('\\') + 1)) + '.pseudo';
+              let description = '';
+              try {
+                  description = fs.readFileSync(fileName, 'utf-8');
+              } catch (error) {
+                  console.error(`读取文件 "${fileName}" 时出错: ` + error);
+              }
+              const res = await askAI(description + "Above is the description for one particular module. You need to generate pseudocode for this module according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate refined pseudocode for current pseudocode, and then divide it into several parts. The specific content of the refined pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${alarmManagementCode}`, message.id);
+              
+              const segments: TempModule[] = extractCodeAndText(res);
+
+              if (project) {
+                  console.log("creating");
+                  const basePath = path.join(model, message.id);
+                  console.log(basePath);
+                  console.log(segments);
+                  for (const segment of segments) {
+                      const moduleDir = path.join(basePath, segment.id);
+                      fs.mkdirSync(moduleDir, { recursive: true });
+                      const fileName = `${segment.id}.pseudo`;
+                      const filePath = path.join(moduleDir, fileName);
+                      try {
+                          fs.writeFileSync(filePath, segment.content);
+                          console.log(`文件 "${fileName}" 已创建并写入内容。`);
+          
+                          const newSegmentProject = {
+                            id: message.id + "/"  + segment.id, 
+                            name: segment.id, 
+                            segments: []
+                          };
+                          console.log(newSegmentProject);
+                          project.segments.push(newSegmentProject);
+                      } catch (error) {
+                          console.error(`创建文件 "${fileName}" 时出错: ` + error);
+                      }
+                  }
+              }
+          })();
+          return;
+          /*case 'generaterefinedpseudo':
+            (async () => {
+              //还需加入精化之前的伪代码（通过读文件）
+              const pseudo = '';
+              const res = await askAI(pseudo + "Above is the pseudo for one particular module. You need to generate refined pseudocode for it according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate pseudocode for this module, and then divide it into several parts. The specific content of the pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${firstLayerCode}`, message.index);
+              
+              const segments: Module[] = extractCodeAndText(res);
+              decontext(message.index);
+              decontext(message.index);
+              
+              const model = vscode.workspace.getConfiguration('ai').get('path') + "";
+              let project = projects.find(project => project.id === message.index);
+              
+              if (project) {
+                  //根据数据结构修改，可能需要修改保存方式
+                  const basePath = path.join(model, project.name.replace(/:/g, '-'));
+                  project.segments = [];
+                  
+                  for (const segment of segments) {
+                      //project.segments.push({ name: segment.module, id: new Date().toISOString() });
+                      const moduleDir = path.join(basePath, segment.module);
+                      fs.mkdirSync(moduleDir, { recursive: true });
+                      const fileName = `${segment.module}.pseudo`;
+                      const filePath = path.join(moduleDir, fileName);
+                      try {
+                          fs.writeFileSync(filePath, segment.pseudoCode);
+                          console.log(`文件 "${fileName}" 已创建并写入内容。`);
+                      } catch (error) {
+                          console.error(`创建文件 "${fileName}" 时出错: ` + error);
+                      }
+                  }
+                  webviewView.webview.postMessage({ command: 'reupdateproject', segments: project.segments });
+              }
+          })();
+          return;*/
+          case 'regeneratepseudo':
+            (async () => {
+              const model = vscode.workspace.getConfiguration('ai').get('path') + "";
+              const fileName = path.join(model, message.id, '/'+message.id) + '.pseudo';
+              console.log(fileName);
+              let currentpseudo = '';
+              try {
+                  currentpseudo = fs.readFileSync(fileName, 'utf-8');
+              } catch (error) {
+                  console.error(`读取文件 "${fileName}" 时出错: ` + error);
+              }
+              const res = await askAI(currentpseudo + "Above is the current. You need to regenerate this pseudocode the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. Below are the specific requirements:You need to regenerate pseudocode for current pseudocode, and you need to make sure nothing appears in your response apart from the regenerated pseudocode." , message.index);
+              const filteredRes = res.replace(/undefined/g, '').replace(/```/g, '').trim();
+                      try {
+                        fs.writeFileSync(fileName, filteredRes);
+                        const doc = await vscode.workspace.openTextDocument(fileName);
+                        await vscode.window.showTextDocument(doc);
+                        console.log(`已在 VSCode 中打开文件`);
+                      } catch (error) {
+                          console.error(`重构 "${fileName}" 时出错: ` + error);
+              }
+          })();
+          return;
+          case 'open':
+            (async () => {
+              const model = vscode.workspace.getConfiguration('ai').get('path') + ""
+                  const folderPath: string = path.join(model, message.id);
+                  try {
+                      const outputFilePath = path.join(folderPath,'pseudocode');
+                      console.log(outputFilePath)
+                      const doc = await vscode.workspace.openTextDocument(outputFilePath);
+                      await vscode.window.showTextDocument(doc);
+                      console.log(`已在 VSCode 中打开文件`);
+                    } catch (error) {
+                        //console.error(`错误: ${error.message}`);
+                    }
+                
+              })();
+              return;
         }
       },
       undefined,
