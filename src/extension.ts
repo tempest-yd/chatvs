@@ -7,7 +7,7 @@ import { remake } from './makenew/remake';
 import { confirm } from './confirm/confirm';
 import { watchTxt } from './watch/watch';
 import { addmenuscommand } from './menu/menucommand';
-
+import { collapse } from './collapse/collapse';
 
 
 
@@ -25,6 +25,7 @@ export async function activate(context: vscode.ExtensionContext) {
     ask(context);
     remake(context);
     confirm(context);
+    collapse(context);
     watchTxt();
 }
 

@@ -141,6 +141,7 @@
                     node-key="id"
                     @check-change="handleCheckChange"
                     check-strictly
+                    :expand-on-click-node = "false"
                 >
                     <template #default="{ node, data }">
                         <span class="custom-tree-node">
@@ -269,10 +270,10 @@
             ]
             const open = (data) => {
                 console.log(data.id)
-                //todo  连接后端打开content.pseudo
                 vscode.postMessage({
-
-              })
+                  command: 'open',
+                  id: currentNode.value.data.id,
+                })
             }
             const isDisabled = ref(false)
             const chinese = ref('')
@@ -302,14 +303,18 @@
                   console.log(con + "!"+ id)
                   //细化传参为 con 和 id
                   vscode.postMessage({
-
+                    command: 'generatepseudo',
+                    id: id,
+                    con:con
                   })
               }else if(value.value === 'Option2'){//重构
                   const con = chinese.value//用户输入框内容
                   const id = textValue.value//当前选中树节点的id
                   //重构传参为 con 和 id
                   vscode.postMessage({
-
+                    command: 'regeneratepseudo',
+                    id: id,
+                    con:con
                   })
               }
             }
@@ -487,9 +492,10 @@
                 displayFolderOption.style.color =  "#4b85dd";
                 displayFolderOption.style.fontWeight = 'bold';
                 displayFolderOption.addEventListener('click', () => {
-                    //todo  连接后端打开DISPLAY的逻辑
+                    
                     vscode.postMessage({
-
+                      command: 'openfileandfolder',
+                      id: currentNode.value.data.id,
                     })
                     document.body.removeChild(menu);
                     isMenu = false
