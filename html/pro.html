@@ -58,7 +58,29 @@
         opacity: 0.3;
         /* 按钮变成半透明显示，表示禁用状态 */
     }
+    #copy-btn1 {
+        background-color: #2c2c2c;
+        width: 5%;
+        border: none;
+        border-radius: 10px;
+        padding: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        position: absolute;
+        bottom: 0;
+        height: 96%;
+        right: 10%;
 
+        z-index: 100;
+    }
+
+    #copy-btn1.disabled {
+        pointer-events: none;
+        /* 禁止按钮点击事件 */
+        opacity: 0.3;
+        /* 按钮变成半透明显示，表示禁用状态 */
+    }
     /* Textarea styles */
     #t4 {
         bottom: 0;
@@ -141,15 +163,16 @@
                     node-key="id"
                     @check-change="handleCheckChange"
                     check-strictly
+                    :expand-on-click-node = "false"
                 >
-                    <template #default="{ node, data }">
+                    <div #default="{ node, data }">
                         <span class="custom-tree-node">
                           <span>{{ node.label }}</span>
                           <span>
                             <a @click="open(data)"> open </a>
                           </span>
                         </span>
-                    </template>
+                      </div>
                 </el-tree>
             </el-scrollbar>
         </el-row>
@@ -198,7 +221,7 @@
                 bottom: 0;
                 position: absolute;">
                     <textarea rows="40" cols="50" placeholder="Please enter your code requirements here." id="t4" v-model="chinese"></textarea>
-                    <button v-if="!isDisabled" :disabled="isDisabled" id="copy-btn"
+                    <button v-if="!isDisabled" :disabled="isDisabled" id="copy-btn1"
                         style="font-size:24px;color:rgb(0, 153, 255)" @click="rawchinese"
                          title="Please use caution when refactoring all modules of the current project."><i
                             class="fa fa-paper-plane"></i></button>
