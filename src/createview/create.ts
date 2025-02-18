@@ -175,7 +175,7 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
                 project.segments = [];
                 segments.forEach(segment => {
 
-                  project.segments.push({ name: segment.module, id: new Date().toISOString() })
+                  project.segments.push()
                   const fileName = `${segment.module}.pseudo`;
                   const filePath = path.join(basePath, fileName);
                   const content = segment.pseudoCode;
@@ -273,7 +273,7 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
             (async () => {
               let project = projects.find(project => project.id === message.project);
               if (project) {
-                project.segments.push({ id: message.index, name: message.index })
+                project.segments.push()
               }
               //定义语言变量
               const language = vscode.workspace.getConfiguration('ai').get('language') + "";  // 可以设置为 'java', 'python', 'javascript', 等等
@@ -543,7 +543,7 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
                 project.segments = [];
                 result.forEach((segment, index) => {
 
-                  project.segments.push({ name: segment.module, id: new Date().toISOString() })
+                  project.segments.push()
                   const fileName = `${segment.module}.pseudo`;
                   const filePath = path.join(basePath, fileName);
                   const content = segment.pseudoCode;
@@ -564,6 +564,101 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
                 webviewView.webview.postMessage({ command: 'addproject', segments: project.segments, ability: result, id: message.index ,name:parts[parts.length - 1]});
               }
             })();
+            return
+          case "addnode":
+            (async () => {
+              //更改数据结构
+
+              let project = projects.find(project => project.id === message.fatherid);
+              if (project) {
+                project.segments.push({
+                  id: message.fatherid + "/" + message.childlabel,
+                  name: message.childlabel,
+                  segments: []
+                })
+              }
+              //更改文件资源管理系统
+              const model = vscode.workspace.getConfiguration('ai').get('path') + ""
+              //文件路径
+              const fileName: string =  "content.pseudo";
+              const foderPath: string = path.join(model, message.fatherid, message.childlabel);
+              const filePath: string =  path.join(model, message.fatherid, message.childlabel,fileName);
+              // 创建并写入文件
+              try {
+                if (!fs.existsSync(foderPath)) {
+                  fs.mkdirSync(foderPath, { recursive: true });
+                }
+                fs.writeFileSync(filePath, "这是新创建的node content");
+              } catch (error) {
+                console.error(`创建文件 "${fileName}" 时出错: ` + error);
+              }
+              
+            })();
+
+            return
+          case "addpro":
+            (async () => {
+              //更改数据结构
+                projects.push({
+                  id:  message.childlabel,
+                  name: message.childlabel,
+                  segments: []
+                })
+
+              //更改文件资源管理系统
+              const model = vscode.workspace.getConfiguration('ai').get('path') + ""
+              //文件路径
+              const fileName: string = message.childlabel;
+              const filePath: string = path.join(model,  fileName);
+              // 创建并写入文件
+              try {
+                if (!fs.existsSync(filePath)) {
+                  fs.mkdirSync(filePath, { recursive: true });
+                }
+                
+              } catch (error) {
+                console.error(`创建文件 "${fileName}" 时出错: ` + error);
+              }
+              
+            })();
+
+            return
+          case "deletenode":
+            (async () => {
+              //更改数据结构
+              let project = projects.find(project => 
+                project.segments.some(segment => segment.id === message.fatherid)
+              );
+              const index = project?.segments.findIndex(pro => pro.id === message.fatherid);
+              
+              if (index !== undefined && index !== -1 && project) {
+                // 使用 splice 移除对象
+                project.segments.splice(index, 1);
+              }
+              
+              //更改文件资源管理系统
+              const model = vscode.workspace.getConfiguration('ai').get('path') + ""
+              //文件路径
+              const fileName: string = message.fatherid;
+              const folderPath: string = path.join(model,  fileName);
+              // 创建并写入文件
+              try {
+                // 检查文件夹是否存在
+                const exists = await fs.pathExists(folderPath);
+                if (!exists) {
+                  console.log(`文件夹 ${folderPath} 不存在`);
+                  return;
+                }
+            
+                // 递归删除文件夹中的文件和子文件夹
+                await fs.remove(folderPath);
+                console.log(`文件夹 ${folderPath} 及其所有内容已删除`);
+              } catch (err) {
+                console.error('删除文件夹时出错:', err);
+              }
+              
+            })();
+
             return
         }
       },

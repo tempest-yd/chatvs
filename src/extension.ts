@@ -9,15 +9,12 @@ import { watchTxt } from './watch/watch';
 import { addmenuscommand } from './menu/menucommand';
 
 
-interface Segment {
-    id: string;
-    name: string;
-}
+
 
 interface Project {
     id: string;
     name: string;
-    segments: Segment[];
+    segments: Project [];
 }
 
 export var projects: Project[] = [];
