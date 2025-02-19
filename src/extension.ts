@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerCreateSetting(context);
     createwebview(context);
     ask(context);
-    remake(context);
+    //remake(context);
     confirm(context);
     collapse(context);
     watchTxt();
