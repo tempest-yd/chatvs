@@ -325,17 +325,17 @@ procedure changeColor(position, color):
                         let content = '';
           
                         for (const filePath of pseudoFiles.filter(file => path.dirname(file) === parentFolderPath)) {
-                            console.log(`正在读取文件: ${filePath}`);
                             const fileContent = await fs.promises.readFile(filePath, 'utf-8');
-                            content += `// --- 来源: ${path.basename(filePath)} ---\n${fileContent}\n\n`;
-                            console.log(`已读取文件: ${filePath}`);
+                            const relativePath = path.relative(model, filePath);
+                            content += `// --- 来源: ${relativePath} ---\n${fileContent}\n\n`;
                         }
           
                         for (const filePath of pseudoFiles.filter(file => path.dirname(file) !== parentFolderPath)) {
                             const isCollapsed = fileDecorations[filePath] === false;
                             if (!isCollapsed) {
                                 const fileContent = await fs.promises.readFile(filePath, 'utf-8');
-                                content += `// --- 来源: ${path.basename(filePath)} ---\n${fileContent}\n\n`;
+                                const relativePath = path.relative(model, filePath);
+                                content += `// --- 来源: ${relativePath} ---\n${fileContent}\n\n`;
                             }
                         }
           
@@ -352,46 +352,6 @@ procedure changeColor(position, color):
                   
                 })();
                 return;
-          /*case 'generateproject':
-            (async () => {
-                const res = await askAI(message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the response format should strictly follow each module's format as ###Module:Moudule name,@@@ability:Moudule ability. The response content should be in English. Here are the specific operations: First, you need to divide this project into modules, and the specific number of modules should be determined based on the difficulty of the requirements. The more difficult the project, the more modules should be divided. Regardless of how many modules you divide, they should form a complete project. The final result should be returned on a per-module basis, with each module containing the module name (no spaces allowed in the module name) and a description of the functionality (the description should be concise and no more than 10 words).", message.index);
-                
-                const segments: Module[] = extractCodeAndText(res);
-                decontext(message.index);
-                decontext(message.index);
-                
-                const model = vscode.workspace.getConfiguration('ai').get('path') + "";
-                let project = projects.find(project => project.id === message.index);
-                
-                if (project) {
-                    const basePath = path.join(model, project.name.replace(/:/g, '-'));
-                    project.segments = [];
-                    
-                    for (const segment of segments) {
-                      const moduleDir = path.join(basePath, segment.module);
-                      fs.mkdirSync(moduleDir, { recursive: true });
-                      const fileName = `${segment.module}.pseudo`;
-                      const filePath = path.join(moduleDir, fileName);
-                      try {
-                          const content = Array.isArray(segment.functionality) ? segment.functionality.join('\n') : segment.functionality;
-                          fs.writeFileSync(filePath, content);
-                          console.log(`文件 "${fileName}" 已创建并写入内容。`);
-                  
-                          const newSegmentProject = {
-                            id: moduleDir, 
-                            name: moduleDir + '/' + segment.module, 
-                            segments: []
-                          };
-                  
-                          project.segments.push(newSegmentProject);
-                      } catch (error) {
-                          console.error(`创建文件 "${fileName}" 时出错: ` + error);
-                      }
-                    }
-                    webviewView.webview.postMessage({ command: 'reupdateproject', segments: project.segments });
-                }
-            })();
-            return;*/
           case 'generatepseudo':
             (async () => {
               const model = vscode.workspace.getConfiguration('ai').get('path') + "";
@@ -404,10 +364,29 @@ procedure changeColor(position, color):
               } catch (error) {
                   console.error(`读取文件 "${fileName}" 时出错: ` + error);
               }
-              const res = await askAI(description + "Above is the description for one particular module. You need to generate pseudocode for this module according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate refined pseudocode for current pseudocode, and then divide it into several parts. The specific content of the refined pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${alarmManagementCode}`, message.id);
-              
-              const segments: TempModule[] = extractCodeAndText(res);
-
+              const slashCount: number = (message.id.match(/\//g) || []).length;
+              if (slashCount === 0) {
+                  console.log("没有找到斜杠字符。");
+              } else if (slashCount === 1) {
+                  console.log("找到了一个斜杠字符。");
+              } else if (slashCount === 2) {
+                  console.log("找到了两个斜杠字符。");
+              } else {
+                  console.log(`找到了${slashCount}个斜杠字符。`);
+              }
+              let segments: TempModule[]=[];
+              if (slashCount === 0) {
+                const res = await askAI(message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the response format should strictly follow each module's format as ###Module:Moudule name,&&&ability:Moudule ability. The response content should be in English. Here are the specific operations: First, you need to divide this project into modules, and the specific number of modules should be determined based on the difficulty of the requirements. The more difficult the project, the more modules should be divided. Regardless of how many modules you divide, they should form a complete project. The final result should be returned on a per-module basis, with each module containing the module name (no spaces allowed in the module name) and a description of the functionality (the description should be concise and no more than 10 words).", message.index);
+                segments = extractCodeAndText(res);
+              }
+              if(slashCount === 1){
+                const res = await askAI(description + "Above is the description for one particular module. You need to generate pseudocode for this module according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate refined pseudocode for current pseudocode, and then divide it into several parts. The specific content of the refined pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${alarmManagementCode}`, message.id);
+                segments = extractCodeAndText(res);
+              }
+              if(slashCount === 2){
+                const res = await askAI(description + "Above is the pseudo for one particular module. You need to generate refined pseudocode for it according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate pseudocode for this module, and then divide it into several parts. The specific content of the pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${firstLayerCode}`, message.index);
+                segments = extractCodeAndText(res);
+              }
               if (project) {
                   console.log("creating");
                   const basePath = path.join(model, message.id);
@@ -436,41 +415,6 @@ procedure changeColor(position, color):
               }
           })();
           return;
-          /*case 'generaterefinedpseudo':
-            (async () => {
-              //还需加入精化之前的伪代码（通过读文件）
-              const pseudo = '';
-              const res = await askAI(pseudo + "Above is the pseudo for one particular module. You need to generate refined pseudocode for it according to the following requirements:" + message.con + "Below are your specific requirements: In your response, all colons should use English colons, and the content should be in English. The response format should strictly follow each part's format as ###Module:this part's name,&&&Pseudocode:Pseudocode content. Below are the specific requirements:You need to generate pseudocode for this module, and then divide it into several parts. The specific content of the pseudocode should be enclosed in ```." + `Learn from the following pseudocode example and then generate the corresponding pseudocode based on my requirements. Example:${firstLayerCode}`, message.index);
-              
-              const segments: Module[] = extractCodeAndText(res);
-              decontext(message.index);
-              decontext(message.index);
-              
-              const model = vscode.workspace.getConfiguration('ai').get('path') + "";
-              let project = projects.find(project => project.id === message.index);
-              
-              if (project) {
-                  //根据数据结构修改，可能需要修改保存方式
-                  const basePath = path.join(model, project.name.replace(/:/g, '-'));
-                  project.segments = [];
-                  
-                  for (const segment of segments) {
-                      //project.segments.push({ name: segment.module, id: new Date().toISOString() });
-                      const moduleDir = path.join(basePath, segment.module);
-                      fs.mkdirSync(moduleDir, { recursive: true });
-                      const fileName = `${segment.module}.pseudo`;
-                      const filePath = path.join(moduleDir, fileName);
-                      try {
-                          fs.writeFileSync(filePath, segment.pseudoCode);
-                          console.log(`文件 "${fileName}" 已创建并写入内容。`);
-                      } catch (error) {
-                          console.error(`创建文件 "${fileName}" 时出错: ` + error);
-                      }
-                  }
-                  webviewView.webview.postMessage({ command: 'reupdateproject', segments: project.segments });
-              }
-          })();
-          return;*/
           case 'regeneratepseudo':
             (async () => {
               const model = vscode.workspace.getConfiguration('ai').get('path') + "";
