@@ -70,12 +70,10 @@ export const confirm = (context: vscode.ExtensionContext) => {
     context.subscriptions.push(confirmCommand);
 
     const updateDecorations = (editor: vscode.TextEditor) => {
-        const fileName = editor.document.fileName;
-
-        // 只对 代码 文件应用装饰
-        if (editor.document.fileName.endsWith('.pseudo')) {
-            return;
-        }
+        // // 只对 代码 文件应用装饰
+        // if (editor.document.fileName.endsWith('.pseudo')) {
+        //     return;
+        // }
 
         const lineCount = editor.document.lineCount;
         const buttonRanges: vscode.DecorationOptions[] = [];
@@ -87,9 +85,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
             if (lineText.trim() === '') {
                 continue; // 跳过空行
             }
-
             const range = new vscode.Range(i, 0, i, 0);
-
             // 根据 type 判断展示 confirm 按钮还是对号
             if (lineTypes[i] === 1) {
                 confirmedRanges.push({ range });
@@ -108,6 +104,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
         const fileName = editor.document.fileName;
         const jsonFileName = fileName.replace(/(?!\.pseudo$)\.[^.]+$/, '_py_human.json');
         const jsonFilePath = path.resolve(__dirname, jsonFileName);
+        console.log(jsonFilePath);
 
         try {
             if (fs.existsSync(jsonFilePath)) {
@@ -140,13 +137,13 @@ export const confirm = (context: vscode.ExtensionContext) => {
         if (confirmedLines.has(line)) {
             return; // 如果已确认，不处理
         }
-
         vscode.commands.executeCommand('CodeToolBox.confirmLine', line);
     };
 
     // 当激活编辑器时加载并更新装饰
     vscode.window.onDidChangeActiveTextEditor(editor => {
-        if (editor && (!editor.document.fileName.endsWith('.pseudo'))) {
+        if (editor /*&& (!editor.document.fileName.endsWith('.pseudo'))*/) {
+            console.log("confirm start")
             loadHumanJson(editor);
             updateDecorations(editor);
         }
@@ -155,7 +152,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
     vscode.workspace.onDidChangeTextDocument(event => {
         clearCurrentDecorations();
         const editor = vscode.window.activeTextEditor;
-        if (editor && editor.document === event.document && (!editor.document.fileName.endsWith('.pseudo'))) {
+        if (editor && editor.document === event.document /*&& (!editor.document.fileName.endsWith('.pseudo'))*/) {
             loadHumanJson(editor); // 文档变化后重新加载 JSON
             updateDecorations(editor);
 

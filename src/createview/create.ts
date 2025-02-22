@@ -345,6 +345,20 @@ procedure changeColor(position, color):
                         const outputFilePath = path.join(parentFolderPath, 'display.pseudocode');
                         await fs.promises.writeFile(outputFilePath, content);
                         console.log(`已创建输出文件: ${outputFilePath}`);
+                        const structuredArray = content.split('\n').map(line => ({
+                          type: 0,
+                          content: line.trim() // 去掉行首尾的空格
+                        }));
+                        // 构造新文件名
+                        console.log(structuredArray);
+                        let filename1 = outputFilePath.replace(/(?!\.pseudo$)\.[^.]+$/, '') + '_py_human.json';
+                        console.log(filename1);
+                        // 设置文件输出路径
+                        const outputPath = path.resolve(__dirname, filename1);
+                        console.log(outputPath);
+                        // 将 structuredArray 写入 JSON 文件
+                        fs.writeFileSync(outputPath, JSON.stringify(structuredArray, null, 2), 'utf-8');
+                        console.log(`文件 "${outputPath}" 已创建并写入内容。`);
           
                         const doc = await vscode.workspace.openTextDocument(outputFilePath);
                         await vscode.window.showTextDocument(doc);
@@ -604,212 +618,266 @@ export async function createwebview(context: vscode.ExtensionContext) {
       })();
 
     }),
-    vscode.commands.registerCommand('CodeToolBox.pseudocode', () => {
-      (async () => {
-        webviewViewProvider?.disable()
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-          vscode.window.showInformationMessage('No active editor!');
-          webviewViewProvider?.able()
-          return;
-        }
-        const document = editor.document;
-        const content = document.getText();
+    // vscode.commands.registerCommand('CodeToolBox.pseudocode', () => {
+    //   (async () => {
+    //     webviewViewProvider?.disable()
+    //     const editor = vscode.window.activeTextEditor;
+    //     if (!editor) {
+    //       vscode.window.showInformationMessage('No active editor!');
+    //       webviewViewProvider?.able()
+    //       return;
+    //     }
+    //     const document = editor.document;
+    //     const content = document.getText();
+    //     const fileName = document.fileName;
+    //     const filename = fileName.substring(0, fileName.lastIndexOf('.')) + ".pseudo";
 
+    //     const fileType1 = fileName.substring(fileName.lastIndexOf('\\') + 1);
+    //     const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
+    //     let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
+    //     let res = "";
+    //     if (project) {
+    //       res = await askAI(content + "Based on the code above, generate pseudocode for it, and make a class out of the pseudocode. The final result should contain only the pseudocode without any additional information. The pseudocode should be in natural language, without using programming language syntax!", project.id)
+    //     }
+    //     try {
+    //       // 创建文件并写入内容
+    //       fs.writeFileSync(filename, ex(res).content);
+    //       console.log(`文件 "${fileName}" 已创建并写入内容。`);
+    //       webviewViewProvider?.able()
+    //     } catch (error) {
+    //       console.error(`创建文件 "${fileName}" 时出错: ` + error);
+    //       webviewViewProvider?.able()
+    //     }
+    //   })();
+    // }),
+    // vscode.commands.registerCommand('CodeToolBox.code', () => {
+    //   (async () => {
+    //     webviewViewProvider?.disable();
+    //     const editor = vscode.window.activeTextEditor;
+    //     if (!editor) {
+    //       vscode.window.showInformationMessage('No editor is active');
+    //       return;
+    //     }
+    //     const selection = editor.selection;
+    //     if (selection.isEmpty) {
+    //       vscode.window.showInformationMessage('No text selected');
+    //       webviewViewProvider?.able();
+    //       return;
+    //     }
+    //     const selectedText = editor.document.getText(selection); // 获取选中的文本
+    //     const document = editor.document;
+    //     const language = vscode.workspace.getConfiguration('ai').get('language') + "";
+    //     const fileExtension: string = getFileExtension(language);
+    //     const fileName = document.fileName;
+    //     const fileType1 = fileName.substring(fileName.lastIndexOf('\\') + 1);
+    //     const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
+    //     let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
+    //     let result = "";
+    //     let currentCode = "";
+    //     let project_id = '';
 
-        const fileName = document.fileName;
-        const filename = fileName.substring(0, fileName.lastIndexOf('.')) + ".pseudo";
+    //     const instructionFilePath = fileName.substring(0, fileName.lastIndexOf('.')) + ".txt";
+    //     let instructionContent = "";
+    //     if (fs.existsSync(instructionFilePath)) {
+    //       instructionContent = fs.readFileSync(instructionFilePath, 'utf8');
+    //       console.log(`Read instruction from ${instructionFilePath}`);
+    //     } else {
+    //       console.log(`File ${instructionFilePath} does not exist.`);
+    //     }
+    //     // 文件路径
+    //     const filename = fileName.substring(0, fileName.lastIndexOf('.')) + `${fileExtension}`;
+    //     if (fs.existsSync(filename)) {
+    //       currentCode = fs.readFileSync(filename, 'utf8');
+    //       if (currentCode === "还未生成python代码") { currentCode = ""; }
+    //       console.log(`File ${filename} exists. Reading currentCode from ${filename}，${currentCode}`)
+    //     } else {
+    //       console.log(`File ${filename} does not exist. Proceeding without current code "${filename}".`);
+    //     }
+    //     const codeTypeFile = fileName.substring(0, fileName.lastIndexOf('.')) + '_pseudo.json';
+    //     let codeType = "";
+    //     if (fs.existsSync(codeTypeFile)) {
+    //       codeType = fs.readFileSync(codeTypeFile, 'utf8');
+    //       console.log(`File ${codeTypeFile} exists. Reading currentCode from ${codeTypeFile}`);
+    //     }
+    //     console.log(currentCode.length);
+    //     if (project && !(currentCode.length > 0)) {
+    //       if (instructionContent) {
+    //         currentCode = instructionContent + "\n" + currentCode;
+    //       }
+    //       project_id = project.id;
+    //       decontext(project_id);
+    //       result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, generate the ${fileExtension} code for it, and make a class out of the pseudocode. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, project.id);
+    //       if (result.length > 0) {
+    //         try {
+    //           result = result.replace('undefined', '').replace('```python', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
+    //           result = result.replace('undefined', '').replace('```c', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
+    //           fs.writeFileSync(filename, result);
+    //           // 将 result 按行拆分并生成 structuredArray
+    //           const structuredArray = result.split('\n').map(line => ({
+    //             type: 0,
+    //             content: line.trim() // 去掉行首尾的空格
+    //           }));
+    //           // 构造新文件名
+    //           let filename1 = filename.replace(/(?!\.pseudo$)\.[^.]+$/, '') + '_py_human.json';
+    //           // 设置文件输出路径
+    //           const outputPath = path.resolve(__dirname, filename1);
+    //           // 将 structuredArray 写入 JSON 文件
+    //           fs.writeFileSync(outputPath, JSON.stringify(structuredArray, null, 2), 'utf-8');
+    //           console.log(`文件 "${filename}" 已创建并写入内容。`);
+    //           webviewViewProvider?.able();
+    //         } catch (error) {
+    //           console.error(`创建文件"${filename}"时出错: ` + error);
+    //           webviewViewProvider?.able();
+    //         }
+    //       }
+    //     }
+    //     // 对比新旧代码并高亮显示
+    //     if (project && currentCode.length > 0) {
+    //       project_id = project.id;
+    //       decontext(project_id);
+    //       if (instructionContent) {
+    //         currentCode = instructionContent + "\n" + currentCode;
+    //       }
+    //       result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, project.id);
+    //       if (result.length > 0) {
+    //         try {
+    //           result = result.replace('undefined', '').replace('```python', '').replace('```c', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
+    //           fs.writeFileSync(filename, result);
+    //           // 将 result 按行拆分并生成 structuredArray
+    //           const structuredArray = result.split('\n').map(line => ({
+    //             type: 0,
+    //             content: line.trim() // 去掉行首尾的空格
+    //           }));
+    //           // 构造新文件名
+    //           let filename1 = filename.replace(/(?!\.pseudo$)\.[^.]+$/, '') + '_py_human.json';
+    //           // 设置文件输出路径
+    //           const outputPath = path.resolve(__dirname, filename1);
+    //           // 将 structuredArray 写入 JSON 文件
+    //           fs.writeFileSync(outputPath, JSON.stringify(structuredArray, null, 2), 'utf-8');
+    //           console.log(`文件 "${filename}" 已创建并写入内容。`);
+    //           webviewViewProvider?.able();
+    //         } catch (error) {
+    //           console.error(`创建文件"${filename}"时出错: ` + error);
+    //           webviewViewProvider?.able();
+    //         }
+    //       }
+    //       let comparisonResult = "";
+    //       comparisonResult = await askAI(
+    //         `Below is the current code and the newly generated code. Please compare them line by line and provide the newly generated code along with its status on a per-line basis. Return only the newly generated code, marking modified lines with a highlight indicator:
+    //           take the following 2 lines as an example:
+    //           1 or 0 (where 1 indicates highlighting is required, 0 indicates no highlighting is needed).
+    //           import os (Content of this line of code)
 
-        const fileType1 = fileName.substring(fileName.lastIndexOf('\\') + 1);
-        const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
-        let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
-        let res = "";
-        if (project) {
-          res = await askAI(content + "Based on the code above, generate pseudocode for it, and make a class out of the pseudocode. The final result should contain only the pseudocode without any additional information. The pseudocode should be in natural language, without using programming language syntax!", project.id)
-        }
-        try {
-          // 创建文件并写入内容
-          fs.writeFileSync(filename, ex(res).content);
-          console.log(`文件 "${fileName}" 已创建并写入内容。`);
-          webviewViewProvider?.able()
-        } catch (error) {
-          console.error(`创建文件 "${fileName}" 时出错: ` + error);
-          webviewViewProvider?.able()
-        }
-      })();
-    }),
+    //           For other unchanged lines in the original code, if a type exists, retain the previous type as specified in ${codeType}.
+    //           Current code: ${currentCode}
+    //           Newly generated code: ${result}
+    //           Do not add any extra content, including comments.`, project_id
+    //       );
+    //       const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'));
+    //       const modifiedFileExtension = fileExtension.replace('.', '_');
+    //       const comparisonResultFilename = baseFileName + `${modifiedFileExtension}.json`;
+    //       const res = parseCodeToStructure(comparisonResult, comparisonResultFilename);
+    //       try {
+    //         fs.writeFileSync(comparisonResultFilename, JSON.stringify(res, null, 2), 'utf8'); // 保存结构体信息
+    //         console.log(`文件"${comparisonResultFilename}" 已创建并写入内容。`);
+    //         webviewViewProvider?.able();
+    //       } catch (error) {
+    //         console.error(`创建文件 "${comparisonResultFilename}" 时出错: ` + error);
+    //         webviewViewProvider?.able();
+    //       }
+    //     }
+    //     const goat = filename;
+    //     const fileContent = 'Pseudo-code has not been generated yet.';
+    //     try {
+    //       await fs.promises.access(goat);
+    //       console.log('File exists, opening...');
+    //       // 打开文件
+    //       vscode.workspace.openTextDocument(goat).then(doc => {
+    //         vscode.window.showTextDocument(doc, {
+    //           preview: false, // 不使用预览模式
+    //           viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
+    //         });
+    //       }, err => {
+    //         vscode.window.showErrorMessage(`打开文件时出错: ${err.message}`);
+    //       });
+    //     } catch (error) {
+    //       console.log('File does not exist, creating...');
+    //       try {
+    //         await fs.promises.writeFile(goat, fileContent);
+    //         console.log('File created successfully');
+    //         await fs.promises.access(goat);
+    //         console.log('File exists, opening...');
+    //         // 打开文件
+    //         vscode.workspace.openTextDocument(goat).then(doc => {
+    //           vscode.window.showTextDocument(doc, {
+    //             preview: false, // 不使用预览模式
+    //             viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
+    //           });
+    //         }, err => {
+    //           vscode.window.showErrorMessage(`打开文件时出错: ${err.message}`);
+    //         });
+    //       } catch (error) {
+    //         console.error('Error creating file:', error);
+    //       }
+    //     }
+    //   })();
+    // }),
     vscode.commands.registerCommand('CodeToolBox.code', () => {
       (async () => {
-        webviewViewProvider?.disable();
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-          vscode.window.showInformationMessage('No editor is active');
-          return;
-        }
-        const selection = editor.selection;
-        if (selection.isEmpty) {
-          vscode.window.showInformationMessage('No text selected');
-          webviewViewProvider?.able();
-          return;
-        }
-        const selectedText = editor.document.getText(selection); // 获取选中的文本
-        const document = editor.document;
-        const language = vscode.workspace.getConfiguration('ai').get('language') + "";
-        const fileExtension: string = getFileExtension(language);
-        const fileName = document.fileName;
-        const fileType1 = fileName.substring(fileName.lastIndexOf('\\') + 1);
-        const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
-        let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
-        let result = "";
-        let currentCode = "";
-        let project_id = '';
-
-        const instructionFilePath = fileName.substring(0, fileName.lastIndexOf('.')) + ".txt";
-        let instructionContent = "";
-        if (fs.existsSync(instructionFilePath)) {
-          instructionContent = fs.readFileSync(instructionFilePath, 'utf8');
-          console.log(`Read instruction from ${instructionFilePath}`);
-        } else {
-          console.log(`File ${instructionFilePath} does not exist.`);
-        }
-        // 文件路径
-        const filename = fileName.substring(0, fileName.lastIndexOf('.')) + `${fileExtension}`;
-        if (fs.existsSync(filename)) {
-          currentCode = fs.readFileSync(filename, 'utf8');
-          if (currentCode === "还未生成python代码") { currentCode = ""; }
-          console.log(`File ${filename} exists. Reading currentCode from ${filename}，${currentCode}`)
-        } else {
-          console.log(`File ${filename} does not exist. Proceeding without current code "${filename}".`);
-        }
-        const codeTypeFile = fileName.substring(0, fileName.lastIndexOf('.')) + '_pseudo.json';
-        let codeType = "";
-        if (fs.existsSync(codeTypeFile)) {
-          codeType = fs.readFileSync(codeTypeFile, 'utf8');
-          console.log(`File ${codeTypeFile} exists. Reading currentCode from ${codeTypeFile}`);
-        }
-        console.log(currentCode.length);
-        if (project && !(currentCode.length > 0)) {
-          if (instructionContent) {
-            currentCode = instructionContent + "\n" + currentCode;
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) {
+              vscode.window.showInformationMessage('No editor is active');
+              return;
           }
-          project_id = project.id;
-          decontext(project_id);
-          result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, generate the ${fileExtension} code for it, and make a class out of the pseudocode. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, project.id);
-          if (result.length > 0) {
-            try {
-              result = result.replace('undefined', '').replace('```python', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
-              result = result.replace('undefined', '').replace('```c', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
-              fs.writeFileSync(filename, result);
-              // 将 result 按行拆分并生成 structuredArray
-              const structuredArray = result.split('\n').map(line => ({
-                type: 0,
-                content: line.trim() // 去掉行首尾的空格
-              }));
-              // 构造新文件名
-              let filename1 = filename.replace(/(?!\.pseudo$)\.[^.]+$/, '') + '_py_human.json';
-              // 设置文件输出路径
-              const outputPath = path.resolve(__dirname, filename1);
-              // 将 structuredArray 写入 JSON 文件
-              fs.writeFileSync(outputPath, JSON.stringify(structuredArray, null, 2), 'utf-8');
-              console.log(`文件 "${filename}" 已创建并写入内容。`);
-              webviewViewProvider?.able();
-            } catch (error) {
-              console.error(`创建文件"${filename}"时出错: ` + error);
-              webviewViewProvider?.able();
+          const selectedText = editor.document.getText(editor.selection);
+  
+          // 使用正则表达式提取路径
+          const regex = /\/\/ --- 来源: (.+?) ---/g;
+          let match;
+          const paths = [];
+          while ((match = regex.exec(selectedText)) !== null) {
+            const path = match[1].trim();
+            if ((path.match(/\\/g) || []).length === 3) {
+                paths.push(path);
             }
           }
-        }
-        // 对比新旧代码并高亮显示
-        if (project && currentCode.length > 0) {
-          project_id = project.id;
-          decontext(project_id);
-          if (instructionContent) {
-            currentCode = instructionContent + "\n" + currentCode;
+          const language = vscode.workspace.getConfiguration('ai').get('language') + "";
+          const fileExtension: string = getFileExtension(language);
+          const modelPath = vscode.workspace.getConfiguration('ai').get('path') + "";
+          let currentCode = '';
+          for (const relativePath of paths) {
+              const originalDir = path.dirname(relativePath);
+              const fullPath = path.join(modelPath, originalDir, 'content' + fileExtension);
+              if (fs.existsSync(fullPath)) {
+                currentCode = fs.readFileSync(fullPath, 'utf-8');
+              } else {
+                  console.log(`文件不存在: ${fullPath}`);
+              }
+              let result = "";
+              const firstLevelFolder = relativePath.split('\\')[0];
+              if(currentCode.length === 0){
+                result = await askAI(selectedText + `The above content is the pseudocode for one module. Based on the overall project requirements and the pseudocode above, generate the ${fileExtension} code for it, and make a class out of the pseudocode. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
+              }
+              else{
+                result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
+              }
+              // 保存生成的代码到文件
+              fs.writeFileSync(fullPath, result);
+              console.log(`文件 "${fullPath}" 已创建并写入内容。`);
+              // 打开生成的文件
+              try {
+                  await vscode.workspace.openTextDocument(fullPath).then(doc => {
+                      vscode.window.showTextDocument(doc, {
+                          preview: false, // 不使用预览模式
+                          viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
+                      });
+                  });
+              } catch (error) {
+                  //vscode.window.showErrorMessage(`打开文件时出错: ${error.message}`);
+              }
           }
-          result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, project.id);
-          if (result.length > 0) {
-            try {
-              result = result.replace('undefined', '').replace('```python', '').replace('```c', '').replace('```undefined', '').replace('```', '').replace('undefined', '');
-              fs.writeFileSync(filename, result);
-              // 将 result 按行拆分并生成 structuredArray
-              const structuredArray = result.split('\n').map(line => ({
-                type: 0,
-                content: line.trim() // 去掉行首尾的空格
-              }));
-              // 构造新文件名
-              let filename1 = filename.replace(/(?!\.pseudo$)\.[^.]+$/, '') + '_py_human.json';
-              // 设置文件输出路径
-              const outputPath = path.resolve(__dirname, filename1);
-              // 将 structuredArray 写入 JSON 文件
-              fs.writeFileSync(outputPath, JSON.stringify(structuredArray, null, 2), 'utf-8');
-              console.log(`文件 "${filename}" 已创建并写入内容。`);
-              webviewViewProvider?.able();
-            } catch (error) {
-              console.error(`创建文件"${filename}"时出错: ` + error);
-              webviewViewProvider?.able();
-            }
-          }
-          let comparisonResult = "";
-          comparisonResult = await askAI(
-            `Below is the current code and the newly generated code. Please compare them line by line and provide the newly generated code along with its status on a per-line basis. Return only the newly generated code, marking modified lines with a highlight indicator:
-              take the following 2 lines as an example:
-              1 or 0 (where 1 indicates highlighting is required, 0 indicates no highlighting is needed).
-              import os (Content of this line of code)
-
-              For other unchanged lines in the original code, if a type exists, retain the previous type as specified in ${codeType}.
-              Current code: ${currentCode}
-              Newly generated code: ${result}
-              Do not add any extra content, including comments.`, project_id
-          );
-          const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'));
-          const modifiedFileExtension = fileExtension.replace('.', '_');
-          const comparisonResultFilename = baseFileName + `${modifiedFileExtension}.json`;
-          const res = parseCodeToStructure(comparisonResult, comparisonResultFilename);
-          try {
-            fs.writeFileSync(comparisonResultFilename, JSON.stringify(res, null, 2), 'utf8'); // 保存结构体信息
-            console.log(`文件"${comparisonResultFilename}" 已创建并写入内容。`);
-            webviewViewProvider?.able();
-          } catch (error) {
-            console.error(`创建文件 "${comparisonResultFilename}" 时出错: ` + error);
-            webviewViewProvider?.able();
-          }
-        }
-        const goat = filename;
-        const fileContent = 'Pseudo-code has not been generated yet.';
-        try {
-          await fs.promises.access(goat);
-          console.log('File exists, opening...');
-          // 打开文件
-          vscode.workspace.openTextDocument(goat).then(doc => {
-            vscode.window.showTextDocument(doc, {
-              preview: false, // 不使用预览模式
-              viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
-            });
-          }, err => {
-            vscode.window.showErrorMessage(`打开文件时出错: ${err.message}`);
-          });
-        } catch (error) {
-          console.log('File does not exist, creating...');
-          try {
-            await fs.promises.writeFile(goat, fileContent);
-            console.log('File created successfully');
-            await fs.promises.access(goat);
-            console.log('File exists, opening...');
-            // 打开文件
-            vscode.workspace.openTextDocument(goat).then(doc => {
-              vscode.window.showTextDocument(doc, {
-                preview: false, // 不使用预览模式
-                viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
-              });
-            }, err => {
-              vscode.window.showErrorMessage(`打开文件时出错: ${err.message}`);
-            });
-          } catch (error) {
-            console.error('Error creating file:', error);
-          }
-        }
       })();
-    }),
+  }),
     vscode.commands.registerCommand('CodeToolBox.mergeall', () => {
       (async () => {
         webviewViewProvider?.disable()

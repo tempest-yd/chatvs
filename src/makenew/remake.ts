@@ -6,8 +6,8 @@ export const remake = (context: vscode.ExtensionContext) => {
     let decorationsArray: vscode.DecorationOptions[] = [];
 
     const decorationType = vscode.window.createTextEditorDecorationType({
-        backgroundColor: 'rgba(255, 215, 0, 0.3)', // 金色背景，半透明
-        borderRadius: '3px'
+        // backgroundColor: 'rgba(255, 215, 0, 0.3)', // 金色背景，半透明
+        // borderRadius: '3px'
     });
 
     function removeDecorations() {
@@ -49,7 +49,7 @@ export const remake = (context: vscode.ExtensionContext) => {
         removeDecorations();
         const document = activeEditor.document;
         initializeDecorations();
-        loadAndApplyJsonDecorations(document);
+        //loadAndApplyJsonDecorations(document);
         if (activeEditor.document.fileName.endsWith('.pseudo')) {
             applyBlockDecorations(activeEditor.document);
         }
@@ -62,7 +62,7 @@ export const remake = (context: vscode.ExtensionContext) => {
             removeDecorations(); // 切换文件时，移除旧文件的装饰
             decorationsArray = []; // 切换到新文件时清空装饰数组
             initializeDecorations();
-            loadAndApplyJsonDecorations(document);
+            //loadAndApplyJsonDecorations(document);
             if (activeEditor.document.fileName.endsWith('.pseudo')) {
                 applyBlockDecorations(activeEditor.document);
             }
@@ -107,7 +107,7 @@ export const remake = (context: vscode.ExtensionContext) => {
         }
     }
 
-    function loadAndApplyJsonDecorations(document: vscode.TextDocument) {
+    /*function loadAndApplyJsonDecorations(document: vscode.TextDocument) {
         if (!activeEditor) return;
         for (let key in decorationRanges) {
             decorationRanges[key] = [];
@@ -170,7 +170,7 @@ export const remake = (context: vscode.ExtensionContext) => {
                 });
             }
         }
-    }
+    }*/
 
     function findLineByContent(content: string): number {
         if (!activeEditor) return -1;
