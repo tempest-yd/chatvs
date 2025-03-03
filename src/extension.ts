@@ -8,6 +8,7 @@ import { confirm } from './confirm/confirm';
 import { watchTxt } from './watch/watch';
 import { addmenuscommand } from './menu/menucommand';
 import { collapse } from './collapse/collapse';
+import { save } from './save/save';
 
 
 
@@ -26,6 +27,7 @@ export async function activate(context: vscode.ExtensionContext) {
     remake(context);
     confirm(context);
     collapse(context);
+    save(context);
     watchTxt();
 }
 

@@ -845,6 +845,7 @@ export async function createwebview(context: vscode.ExtensionContext) {
           const fileExtension: string = getFileExtension(language);
           const modelPath = vscode.workspace.getConfiguration('ai').get('path') + "";
           let currentCode = '';
+          let openCount = 0;
           for (const relativePath of paths) {
               const originalDir = path.dirname(relativePath);
               const fullPath = path.join(modelPath, originalDir, 'content' + fileExtension);
@@ -864,16 +865,21 @@ export async function createwebview(context: vscode.ExtensionContext) {
               // 保存生成的代码到文件
               fs.writeFileSync(fullPath, result);
               console.log(`文件 "${fullPath}" 已创建并写入内容。`);
+              openCount++;
+              // 打开生成的文件
+              const viewColumn = openCount === 1 ? vscode.ViewColumn.Beside : vscode.ViewColumn.Active;
+
               // 打开生成的文件
               try {
                   await vscode.workspace.openTextDocument(fullPath).then(doc => {
                       vscode.window.showTextDocument(doc, {
                           preview: false, // 不使用预览模式
-                          viewColumn: vscode.ViewColumn.Beside // 在旁边的一个新窗口中打开
+                          viewColumn: viewColumn // 使用计算后的视图列
                       });
                   });
               } catch (error) {
-                  //vscode.window.showErrorMessage(`打开文件时出错: ${error.message}`);
+                  // 处理打开文件时的错误
+                  // vscode.window.showErrorMessage(`打开文件时出错: ${error.message}`);
               }
           }
       })();
