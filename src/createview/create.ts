@@ -830,7 +830,6 @@ export async function createwebview(context: vscode.ExtensionContext) {
               return;
           }
           const selectedText = editor.document.getText(editor.selection);
-  
           // 使用正则表达式提取路径
           const regex = /\/\/ --- 来源: (.+?) ---/g;
           let match;
@@ -863,12 +862,13 @@ export async function createwebview(context: vscode.ExtensionContext) {
                 result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
               }
               // 保存生成的代码到文件
+              console.log(result);
+              result= result.replace(/undefined/g, '').replace(/```python/g, '').replace(/```c/g, '').replace(/```java/g, '');
               fs.writeFileSync(fullPath, result);
               console.log(`文件 "${fullPath}" 已创建并写入内容。`);
               openCount++;
               // 打开生成的文件
               const viewColumn = openCount === 1 ? vscode.ViewColumn.Beside : vscode.ViewColumn.Active;
-
               // 打开生成的文件
               try {
                   await vscode.workspace.openTextDocument(fullPath).then(doc => {
