@@ -69,6 +69,27 @@ async function readPseudoFilesRecursively(folderPath: string): Promise<string[]>
   return pseudoFiles;
 }
 
+function extractAlgorithm(text: string, path: string): string | null {
+  const startPattern = `// --- 来源: ${path} ---`;
+  const endPattern = '// ---';
+  // 查找起始位置
+  const startIndex = text.indexOf(startPattern);
+  if (startIndex === -1) {
+      return null; // 路径不存在
+  }
+  // 从起始位置偏移到伪代码的开头
+  let contentStartIndex = startIndex + startPattern.length;
+  // 查找结束位置
+  const endIndex = text.indexOf(endPattern, contentStartIndex);
+  // 如果找到结束位置，则截取内容
+  let contentEndIndex = endIndex !== -1 ? endIndex : text.length;
+  // 提取伪代码内容并去除多余空白
+  const content = text.substring(contentStartIndex, contentEndIndex).trim();
+  console.log("content   "+content)
+  return content;
+}
+
+
 function findProjectById(projects: Project[], id: string): Project | null {
   console.log(projects);
   for (const project of projects) {
@@ -846,6 +867,13 @@ export async function createwebview(context: vscode.ExtensionContext) {
           let currentCode = '';
           let openCount = 0;
           for (const relativePath of paths) {
+              let content: string | null = null;
+              content= extractAlgorithm(selectedText, relativePath);
+            if (content) {
+                console.log(content);
+            } else {
+                console.log(relativePath+"路径不存在");
+            }
               const originalDir = path.dirname(relativePath);
               const fullPath = path.join(modelPath, originalDir, 'content' + fileExtension);
               if (fs.existsSync(fullPath)) {
@@ -855,14 +883,14 @@ export async function createwebview(context: vscode.ExtensionContext) {
               }
               let result = "";
               const firstLevelFolder = relativePath.split('\\')[0];
+              console.log("selectedText:"+relativePath+content);
               if(currentCode.length === 0){
-                result = await askAI(selectedText + `The above content is the pseudocode for one module. Based on the overall project requirements and the pseudocode above, generate the ${fileExtension} code for it, and make a class out of the pseudocode. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
+                result = await askAI(content + `The above content is the pseudocode for one module. Based on the overall project requirements and the pseudocode above, generate the ${fileExtension} code for it, and make a class out of the pseudocode. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
               }
               else{
-                result = await askAI(selectedText + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
+                result = await askAI(content + `The above content is part of the pseudocode you previously generated for one module. Based on the overall project requirements and the pseudocode above, modify the existing code ${currentCode} to generate the ${fileExtension} code, ensuring that both the original and new functionalities work correctly. Remember to make it a class. Note that you only need to generate the code for this module without considering other modules. The final result should contain only the code, without any additional information.`, firstLevelFolder);
               }
               // 保存生成的代码到文件
-              console.log(result);
               result= result.replace(/undefined/g, '').replace(/```python/g, '').replace(/```c/g, '').replace(/```java/g, '');
               fs.writeFileSync(fullPath, result);
               console.log(`文件 "${fullPath}" 已创建并写入内容。`);
