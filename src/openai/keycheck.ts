@@ -159,7 +159,9 @@ export async function askAI(message: string, id: string) {
 
                 let responseText = '';
                 for await (const chunk of response) {
-                    responseText += chunk.choices[0]?.delta?.content;
+                    if(chunk.choices[0]?.delta?.content){
+                        responseText += chunk.choices[0]?.delta?.content;
+                    }
                 }
                 res = responseText
             }

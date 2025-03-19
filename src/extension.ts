@@ -9,6 +9,7 @@ import { watchTxt } from './watch/watch';
 import { addmenuscommand } from './menu/menucommand';
 import { collapse } from './collapse/collapse';
 import { save } from './save/save';
+import { comment } from './comment/comment';
 
 
 
@@ -29,6 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
     collapse(context);
     save(context);
     watchTxt();
+    comment(context);
 }
 
 export function deactivate() {}
