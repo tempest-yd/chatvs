@@ -120,8 +120,16 @@ export const collapse = (context: vscode.ExtensionContext) => {
         const fileExtension = path.extname(editor.document.fileName);
         
         if (fileExtension === '.pseudocode') {
-            console.log(`Line clicked: ${line}`);
-            vscode.commands.executeCommand('CodeToolBox.toggleFileDecoration', line, editor);
+            const lineText = editor.document.lineAt(line).text;
+            
+            // 检查当前是否有多个选择（用户长按拖动）
+            if (event.selections.length === 1 && event.selections[0].start.isEqual(event.selections[0].end)) {
+                // 只有当选择是单行点击时才触发折叠
+                if (lineText.trim().startsWith('// ---')) {
+                    console.log(`Line clicked: ${line}`);
+                    vscode.commands.executeCommand('CodeToolBox.toggleFileDecoration', line, editor);
+                }
+            }
         }
     });
 
