@@ -6,10 +6,11 @@ import { ask } from "./openai/keycheck";
 import { remake } from './makenew/remake';
 import { confirm } from './confirm/confirm';
 import { watchTxt } from './watch/watch';
-import { addmenuscommand } from './menu/menucommand';
 import { collapse } from './collapse/collapse';
 import { save } from './save/save';
 import { comment } from './comment/comment';
+import { startLogging } from './log/log';
+// import { addmenuscommand } from './menu/menucommand';
 
 
 
@@ -25,6 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerCreateSetting(context);
     createwebview(context);
     ask(context);
+    startLogging(context);
     remake(context);
     confirm(context);
     collapse(context);

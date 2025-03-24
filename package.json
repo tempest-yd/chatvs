@@ -1,5 +1,6 @@
 {
   "name": "2002",
+  "publisher": "codesketcher",
   "displayName": "ChatVS",
   "description": "a programme to help code via llm",
   "version": "0.0.1",
@@ -12,7 +13,6 @@
   "activationEvents": [],
   "main": "./out/extension",
   "contributes": {
-    
     "configuration": {
       "title": "AiProgram",
       "properties": {
@@ -184,17 +184,14 @@
         {
           "command": "CodeToolBox.pseudocode",
           "when": "resourceLangId != plaintext"
-          
         },
         {
           "command": "CodeToolBox.divideBlocks",
           "title": "Generate the pseudocode for the next level.(Disabled)"
-
         },
         {
           "command": "CodeToolBox.code",
           "when": "resourceLangId == plaintext"
-          
         },
         {
           "command": "CodeToolBox.mergeall",
@@ -220,7 +217,6 @@
           "when": "commentController == comment-scribeai"
         }
       ]
-
     }
   },
   "scripts": {
@@ -256,6 +252,8 @@
     "vsce": "^2.15.0",
     "vscode": "^1.1.37",
     "vscode-webview-tool": "^1.0.4",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "yarn": "^1.22.22"
   }
 }

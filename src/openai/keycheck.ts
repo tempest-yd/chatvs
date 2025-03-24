@@ -133,7 +133,7 @@ export async function askAI(message: string, id: string) {
     // 如果openai未初始化，则使用现有的API密钥初始化它，或者如果不存在，则提示用户输入API密钥
     if (openai === undefined) {
         if (vscode.workspace.getConfiguration('ai').get('ApiKey') === '') {
-            const apiKey = await showInputBox(); // 获取用户输入的API密钥
+            await showInputBox(); // 获取用户输入的API密钥
         }
 
         // 使用配置中的API密钥初始化openai实例
@@ -148,17 +148,15 @@ export async function askAI(message: string, id: string) {
     if (model === "ChatGPT" || model === "gpt-4") {
         try {
             if (openai) {
-                const prompt = ["When was Microsoft founded?"];
                 const response = await openai.chat.completions.create({
                     model: (model === "ChatGPT" ? "gpt-35-turbo" : "Gavin_deployment"), // 选择适当的ChatGPT模型版本
                     messages: chatGPTPrompt,
                     stream: true // 启用流式传输
-
                 });
-
 
                 let responseText = '';
                 for await (const chunk of response) {
+                    console.log('a'); // test
                     if(chunk.choices[0]?.delta?.content){
                         responseText += chunk.choices[0]?.delta?.content;
                     }

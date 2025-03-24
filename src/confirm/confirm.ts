@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { logInfo } from '../log/log';
 
 import { remake } from '../makenew/remake';
 
@@ -53,6 +54,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
                 // 保存修改后的 JSON 文件
                 try {
                     fs.writeFileSync(jsonFilePath, JSON.stringify(structuredArray, null, 2), 'utf-8');
+                    logInfo({ operation: 'lineconfirm', target: fileName.substring(0, fileName.lastIndexOf('\\')), lineIndex: line + 1, lineContent: lineText});
                     vscode.window.showInformationMessage(`Line ${line + 1} confirmed and JSON updated.`);
 
                     // 更新 lineTypes 状态
