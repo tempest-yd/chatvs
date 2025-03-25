@@ -12,7 +12,9 @@ interface LogData {
         | 'code' 
         | 'mergeall' 
         | 'divideblocks' 
-        | 'lineconfirm';
+        | 'lineconfirm'
+        | 'pseudo fix'
+        | 'code fix';
     target: string;
     [key: string]: any;
 }
@@ -59,6 +61,8 @@ export async function startLogging(context : vscode.ExtensionContext) {
  *   - 'mergeall':         合并代码块
  *   - 'divideblocks':     分割代码块
  *   - 'lineconfirm':      行确认操作
+ *   - 'pseudo fix':       修改伪代码保存操作
+ *   - 'code fix':         修改具体代码保存操作
  * @param {string} data.target    - 目标节点的绝对路径
  * @param {Object} [data.additionalFields] - 可选的额外日志字段
  */

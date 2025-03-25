@@ -12,8 +12,6 @@ import { comment } from './comment/comment';
 import { startLogging } from './log/log';
 // import { addmenuscommand } from './menu/menucommand';
 
-
-
 interface Project {
     id: string;
     name: string;

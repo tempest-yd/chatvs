@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { logInfo } from '../log/log';
 
+import { logInfo } from '../log/log';
 import { remake } from '../makenew/remake';
 
 let lineTypes: { [key: number]: number } = {};
@@ -284,16 +284,16 @@ export const confirm = (context: vscode.ExtensionContext) => {
         });
     }
 
-    function applyDecorations(decorationsArray: vscode.DecorationOptions[] = []) {
-        const decorationType = vscode.window.createTextEditorDecorationType({
-            backgroundColor: 'rgba(255, 215, 0, 0.3)',
-            borderRadius: '3px'
-        });
+    // function applyDecorations(decorationsArray: vscode.DecorationOptions[] = []) {
+    //     const decorationType = vscode.window.createTextEditorDecorationType({
+    //         backgroundColor: 'rgba(255, 215, 0, 0.3)',
+    //         borderRadius: '3px'
+    //     });
 
-        if (activeEditor) {
-            activeEditor.setDecorations(decorationType, decorationsArray);
-        }
-    }
+    //     if (activeEditor) {
+    //         activeEditor.setDecorations(decorationType, decorationsArray);
+    //     }
+    // }
 
     async function switchDisplayMode() {
         if (activeEditor && activeEditor.document.languageId === 'python') {
