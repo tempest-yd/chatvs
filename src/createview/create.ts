@@ -2,29 +2,17 @@ import * as vscode from 'vscode';
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as langUtil from '../tools/langUtil';
 import { getHtmlForWebview } from "../viewutil/webview";
 import { askAI } from "../openai/keycheck"
 import { extractCodeAndText } from '../tools/re'
 import { ex,ex1 } from '../tools/ex'
 import { projects } from '../extension';
 import { logInfo } from '../log/log';
-// import { creatfile } from "../tools/creatfile"
-// import * as JSON5 from 'json5';
-// import { decontext } from "../openai/keycheck"
-// import { text } from 'stream/consumers';
-// import { exec } from 'child_process';
 
 // 创建一个 webview 视图
 let webviewViewProvider: MyWebviewViewProvider | undefined;
 let fileDecorations: { [key: string]: boolean } = {};
-
-// 获取扩展的根路径
-// 遍历模块数组
-// interface Module {
-//   module: string;
-//   functionality: string[];
-//   pseudoCode: string;
-// }
 
 interface TempModule {
   id: string;
@@ -36,22 +24,6 @@ interface Project {
   name: string;
   segments: Project [];
 }
-
-// 保存代码差别
-// interface Line {
-//   type: number;
-//   content: string;
-// }
-
-// interface CodeLine {
-//   type: number;
-//   content: string;
-// }
-
-// function removeExtension(filename: string, extension: string) {
-//   const regex = new RegExp(`${extension}$`);
-//   return filename.replace(regex, '');
-// }
 
 async function readPseudoFilesRecursively(folderPath: string): Promise<string[]> {
   const files = await fs.promises.readdir(folderPath);
@@ -89,10 +61,9 @@ function extractAlgorithm(text: string, path: string): string | null {
   let contentEndIndex = endIndex !== -1 ? endIndex : text.length;
   // 提取伪代码内容并去除多余空白
   const content = text.substring(contentStartIndex, contentEndIndex).trim();
-  console.log("content   "+content)
+  console.log("content " + content)
   return content;
 }
-
 
 function findProjectById(projects: Project[], id: string): Project | null {
   console.log(projects);
@@ -100,7 +71,7 @@ function findProjectById(projects: Project[], id: string): Project | null {
     if (project.id === id) {
       return project; 
     }
-    console.log(project.id+"不是要找的");
+    console.log(project.id + "不是要找的");
     const foundInSegments = findProjectById(project.segments, id);
     if (foundInSegments) {
       return foundInSegments; 
@@ -195,6 +166,7 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
   constructor(private context: vscode.ExtensionContext) {
     this.context = context;
   }
+
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     this.webview = webviewView.webview;
     // 设置 enableScripts 选项为 true
@@ -209,34 +181,33 @@ class MyWebviewViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(
       message => {
         const firstLayerCode: string = `procedure addLetter(key):
-    if current line has less than 5 letters inputed:
-        add the corresponding letter into next tile
+  if current line has less than 5 letters inputed:
+    add the corresponding letter into next tile
 
 procedure deleteLetter():
-    if current line has more than 0 letters inputed:
-        remove the letter of the current tile
+  if current line has more than 0 letters inputed:
+    remove the letter of the current tile
         
 procedure changeColor(position, color):
-	reset the element attribute of corresponding tile
-        `;
-        const alarmManagementCode: string = `
-        do for all sensors
-            invoke checkSensor procedure returning signalValue
-            if signalValue > bound[alarmType] then
-                phone.message = message[alarmType]
-                set alarmBell to "on" for alarmTimeSeconds
-                set system status = "alarmCondition"
+	reset the element attribute of corresponding tile`;
+
+        const alarmManagementCode: string = `do for all sensors
+  invoke checkSensor procedure returning signalValue
+  if signalValue > bound[alarmType] then
+    phone.message = message[alarmType]
+    set alarmBell to "on" for alarmTimeSeconds
+    set system status = "alarmCondition"
                 
-                parbegin
-                    invoke alarm procedure with "on", alarmTimeSeconds
-                    invoke phone procedure set for alarmType, phoneNumber
-                parend
-            else
-                skip
-            endif
-        end do for
-        end alarmManagement
-        `;
+    parbegin
+      invoke alarm procedure with "on", alarmTimeSeconds
+      invoke phone procedure set for alarmType, phoneNumber
+    parend
+  else
+    skip
+    endif
+  end do for
+end alarmManagement`;
+
         switch (message.command) {
           case "addnode":
             (async () => {
@@ -261,7 +232,10 @@ procedure changeColor(position, color):
                   fs.mkdirSync(folderPath, { recursive: true });
                 }
                 fs.writeFileSync(filePath, "这是新创建的node content");
-                logInfo({ operation: 'addnode', target: folderPath });
+                logInfo({ 
+                  operation: 'addnode',
+                  target: folderPath
+                });
               } catch (error) {
                 console.error(`创建文件 "${fileName}" 时出错: ` + error);
               }
@@ -292,7 +266,10 @@ procedure changeColor(position, color):
                   fs.mkdirSync(filePath, { recursive: true });
                 }
                 fs.writeFileSync(filePa, "这是新创建的node content");
-                logInfo({ operation: 'addpro', target: filePath });
+                logInfo({
+                  operation: 'addpro',
+                  target: filePath
+                });
               } catch (error) {
                 console.error(`创建文件 "${fileName}" 时出错: ` + error);
               }
@@ -330,7 +307,10 @@ procedure changeColor(position, color):
                 // 递归删除文件夹中的文件和子文件夹
                 await fs.remove(folderPath);
                 console.log(`文件夹 ${folderPath} 及其所有内容已删除`);
-                logInfo({ operation: 'deletenode', target: folderPath });
+                logInfo({
+                  operation: 'deletenode',
+                  target: folderPath
+                });
               } catch (err) {
                 console.error('删除文件夹时出错:', err);
               }
@@ -426,7 +406,12 @@ procedure changeColor(position, color):
               }
               const res = await askAI(prompt, message.id);
               segments = extractCodeAndText(res);
-              logInfo({ operation: 'generatepseudo', target: fileName.substring(0, fileName.lastIndexOf('\\')), prompt: prompt, segments: segments });
+              logInfo({
+                operation: 'generatepseudo',
+                target: fileName.substring(0, fileName.lastIndexOf('\\')),
+                prompt: prompt,
+                segments: segments
+              });
 
               if (project) {
                 console.log("creating");
@@ -532,61 +517,10 @@ procedure changeColor(position, color):
   }
 }
 
-/**
- * 删除指定文件夹及其内容
- * @param dirPath 文件夹路径
- */
-//根据语言类型决定文件扩展名
-const getFileExtension = (language: string): string => {
-  switch (language.toLowerCase()) {
-    case 'java':
-      return '.java';
-    case 'python':
-      return '.py';
-    case 'javascript':
-      return '.js';
-    case 'typescript':
-      return '.ts';
-    case 'c':
-      return '.c';
-    case 'c++':
-      return '.cpp';
-    case 'html':
-      return '.html';
-    default:
-      throw new Error('Unsupported language type');
-  }
-};
 const openChatGPTView = (selectedText?: string) => {
   // 唤醒 chatGPT 视图 连接openai此处写后端
   vscode.commands.executeCommand("workbench.view.extension.CodeToolBox").then(() => {
     vscode.commands.executeCommand("setContext", "CodeToolBox.chatGPTView", true);
-      // .then(() => {
-      //   //验证获取设置中的内容，在package。json中的configuration中设置
-      //   const config = vscode.workspace.getConfiguration("CodeToolBox");
-      //   const hostname = config.get("hostname");
-      //   const apiKey = config.get("apiKey");
-      //   const model = config.get("model");
-      //   setTimeout(() => {
-      //     // 发送任务,并传递参数
-      //     if (!webviewViewProvider || !webviewViewProvider?.webview) {
-      //       return;
-      //     }
-      //     webviewViewProvider.webview.postMessage({
-      //       cmd: "vscodePushTask",
-      //       task: "route",
-      //       data: {
-      //         path: "/chat-gpt-view",
-      //         query: {
-      //           hostname,
-      //           apiKey,
-      //           selectedText,
-      //           model,
-      //         },
-      //       },
-      //     });
-      //   }, 500);
-      // });
   });
 };
 
@@ -868,9 +802,9 @@ export async function createwebview(context: vscode.ExtensionContext) {
             paths.push(path);
           }
         }
-        const language = vscode.workspace.getConfiguration('ai').get('language') + '';
-        const fileExtension: string = getFileExtension(language);
-        const modelPath = vscode.workspace.getConfiguration('ai').get('path') + '';
+        const language = vscode.workspace.getConfiguration('ai').get('language') as string;
+        const fileExtension: string = langUtil.getSrcFileSuffix(language) as string;
+        const modelPath = vscode.workspace.getConfiguration('ai').get('path') as string;
         let currentCode = '';
         let openCount = 0;
         for (const relativePath of paths) {
@@ -899,7 +833,12 @@ export async function createwebview(context: vscode.ExtensionContext) {
           result = await askAI(prompt, firstLevelFolder);
           // 保存生成的代码到文件
           result = result.replace(/undefined/g, '').replace(/```python/g, '').replace(/```c/g, '').replace(/```java/g, '');
-          logInfo({ operation: 'code', target: fullPath.substring(0, fullPath.lastIndexOf('\\')), prompt: prompt, response: result });
+          logInfo({
+            operation: 'code',
+            target: fullPath.substring(0, fullPath.lastIndexOf('\\')),
+            prompt: prompt,
+            response: result
+          });
           fs.writeFileSync(fullPath, result);
           console.log(`文件 "${fullPath}" 已创建并写入内容。`);
           openCount ++;
@@ -932,8 +871,8 @@ export async function createwebview(context: vscode.ExtensionContext) {
         }
         const document = editor.document;
         const content = document.getText();
-        const language = vscode.workspace.getConfiguration('ai').get('language') + '';
-        const fileExtension: string = getFileExtension(language);
+        const language = vscode.workspace.getConfiguration('ai').get('language') as string;
+        const fileExtension: string = langUtil.getSrcFileSuffix(language) as string;
 
         const fileName = document.fileName;
 
@@ -941,7 +880,6 @@ export async function createwebview(context: vscode.ExtensionContext) {
         const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
         let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
         let res = '', prompt = '';
-        //文件路径
         const filename = fileName.substring(0, fileName.lastIndexOf('.')) + fileExtension;
         if (project) {
           prompt = content + `The above content is the pseudocode you previously generated for one module, which I want to use as the main module. Based on the interfaces of the various modules you just generated, please create the ${fileExtension} code for the main game module. Additionally, generate its ${fileExtension} code according to the pseudocode above. Remember to make it a class. The final result should contain only the code without any additional information, and I want to write it to a file named ${filename}. Note that the code should include a main function as the entry point for the entire project, and you only need to generate the code for this module without considering other modules`;
@@ -951,7 +889,12 @@ export async function createwebview(context: vscode.ExtensionContext) {
           // 创建文件并写入内容
           let content = ex(res).content;
           fs.writeFileSync(filename, content);
-          logInfo({ operation: 'mergeall', target: fileName.substring(0, fileName.lastIndexOf('\\')), prompt: prompt, response: content });
+          logInfo({
+            operation: 'mergeall',
+            target: fileName.substring(0, fileName.lastIndexOf('\\')),
+            prompt: prompt, 
+            esponse: content
+          });
           console.log(`文件 "${filename}" 已创建并写入内容。`);
           webviewViewProvider?.able()
         } catch (error) {
@@ -977,7 +920,6 @@ export async function createwebview(context: vscode.ExtensionContext) {
         const filename1 = fileType1.substring(0, fileType1.lastIndexOf('.'));
         let project = projects.find(project => (project.segments.find(segment => segment.name.replace(/:/g, '-') === filename1)));
         let res = '', prompt = '';
-        //文件路径
         if (project) {
           prompt = content + `The above content is the pseudocode you previously generated for one module.I need you to divide the pseudocode into several blocks.A code block is a group of statements or instructions enclosed within specific delimiters that are treated as a single unit of code. Note that you should only add the annotation beginning with 'block'+ index.without altering any pseudocode or adding any other information.`;
           res = await askAI(prompt, project.id)
@@ -986,7 +928,12 @@ export async function createwebview(context: vscode.ExtensionContext) {
           // 创建文件并写入内容
           let content = ex1(res).content;
           fs.writeFileSync(fileName, content);
-          logInfo({ operation: 'divideblocks', target: fileName.substring(0, fileName.lastIndexOf('\\')), prompt: prompt, response: content });
+          logInfo({
+            operation: 'divideblocks',
+            target: fileName.substring(0, fileName.lastIndexOf('\\')),
+            prompt: prompt,
+            response: content
+          });
           console.log(`文件 "${fileName}" 已创建并写入内容。`);
           webviewViewProvider?.able()
         } catch (error) {
@@ -996,8 +943,4 @@ export async function createwebview(context: vscode.ExtensionContext) {
       })();
     })
   )
-  // interface FileData {
-  //   name: string;
-  //   content: string;
-  // }
 }

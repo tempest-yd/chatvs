@@ -14,6 +14,7 @@ export function ex(input: string): {  content: string, lan: string } {
 
     return segments;
 }
+
 export function ex1(input: string): {  content: string, lan: string } {
     let segments: { content: string, lan: string } ={ content: "", lan: "" }
     let filteredInput = input

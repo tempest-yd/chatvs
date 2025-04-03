@@ -8,7 +8,6 @@ dotenv.config();
 
 let openai: typeof AzureOpenAI | undefined = undefined;
 
-
 // 定义项目的接口
 interface messages {
     id: string;//项目id
@@ -17,6 +16,7 @@ interface messages {
 
 // 声明 projects 变量为 Project 对象数组
 export var messages: messages[] = [];
+
 /**
 * 显示输入框以获取 API 密钥，使用 window.showInputBox() 方法。
 * 检查输入的 API 密钥是否有效。
@@ -55,6 +55,7 @@ export async function showInputBox() {
     // await vscode.workspace.getConfiguration('scribeai').update('ApiKey', result, false);
     return result; // 返回获取到的 API 密钥
 }
+
 /**
  * 验证 API 密钥的有效性。
  * 如果验证通过，将创建一个 OpenAIApi 实例并赋给 openai 变量。
@@ -75,6 +76,7 @@ async function validateAPIKey() {
     }
     return true; // 验证通过
 }
+
 export async function ask(context: vscode.ExtensionContext) {
     // Workspace settings override User settings when getting the setting.
     // 当获取设置时，工作区设置会覆盖用户设置。
@@ -98,6 +100,7 @@ export async function ask(context: vscode.ExtensionContext) {
     //     await askAI(message);		
     // }));
 }
+
 export async function askAI(message: string, id: string) {
     // const question = reply.text.trim(); // 获取用户提出的问题
     // const thread = reply.thread; // 获取线程对象
@@ -197,10 +200,12 @@ async function generateanswerChatGPT(question: string, messages: { role: 'system
     messages.push({ "role": "assistant", "content": `${question}` });
     return messages;
 }
+
 async function generatePromptChatGPT(question: string, messages: { role: 'system' | 'user' | 'assistant', content: string }[]) {
     messages.push({ "role": "user", "content": `${question}` });
     return messages;
 }
+
 /**
      * Generates the prompt to pass to OpenAI.
      * Prompt includes: 
@@ -223,6 +228,7 @@ async function generatePromptV1(question: string) {
 
     return rolePlay + "\n```\n\n\n" + conversation;
 }
+
 /**
  * Gets the highlighted code for this comment thread
  * @param thread
