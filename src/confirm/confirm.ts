@@ -55,7 +55,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
                 try {
                     fs.writeFileSync(jsonFilePath, JSON.stringify(structuredArray, null, 2), 'utf-8');
                     logInfo({ operation: 'lineconfirm', target: fileName.substring(0, fileName.lastIndexOf('\\')), lineIndex: line + 1, lineContent: lineText});
-                    vscode.window.showInformationMessage(`Line ${line + 1} confirmed and JSON updated.`);
+                    //vscode.window.showInformationMessage(`Line ${line + 1} confirmed and JSON updated.`);
 
                     // 更新 lineTypes 状态
                     lineTypes[line] = 1;
@@ -64,7 +64,7 @@ export const confirm = (context: vscode.ExtensionContext) => {
                     //vscode.window.showErrorMessage(`Error writing to JSON file: ${error}`);
                 }
             } else {
-                vscode.window.showWarningMessage(`No matching content found in JSON for line ${line + 1}.`);
+                //vscode.window.showWarningMessage(`No matching content found in JSON for line ${line + 1}.`);
             }
         }
     });
@@ -305,13 +305,13 @@ export const confirm = (context: vscode.ExtensionContext) => {
             if (isJsonDisplayMode) {
                 isJsonDisplayMode = false;
                 remake(context);
-                vscode.window.showInformationMessage('切换到展示模式：按段生成');
+                //vscode.window.showInformationMessage('切换到展示模式：按段生成');
 
             } else {
                 isJsonDisplayMode = true;
                 //const newDecorations = await loadJsonDecorations(humanJsonFileName);
                 //applyDecorations(newDecorations);
-                vscode.window.showInformationMessage('切换到展示模式: 是否机器生成');
+                //vscode.window.showInformationMessage('切换到展示模式: 是否机器生成');
             }
         }
     }

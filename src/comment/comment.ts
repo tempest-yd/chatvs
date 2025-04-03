@@ -33,7 +33,7 @@ export const comment = (context: ExtensionContext) => {
 	};
 
 	commentController.options = {
-		prompt: "Ask Scribe AI...",
+		prompt: "Ask AI...",
 		placeHolder: "Ask me anything! Example: \"Explain the above code in plain English\""
 	};
 	 // 注册生成按钮（generate）
@@ -77,7 +77,7 @@ async function askAI1(reply: vscode.CommentReply) {
 	const gen = vscode.workspace.getConfiguration('ai').get('path') + ""
 	//todo//调用openai接口完成信息回传
 	const responseText = await askAI(codeblock + "First, you need to determine whether this is actual code or pseudocode. If it's code, keep the current language and only modify the content. If it's pseudocode, maintain the current pseudocode format and only modify the content. My suggested changes are:" +question, filePath.slice(gen.length + 1));
-	const AIComment = new NoteComment(new vscode.MarkdownString(responseText.trim()), vscode.CommentMode.Preview, { name: 'Scribe AI', iconPath: vscode.Uri.parse("https://img.icons8.com/fluency/96/null/chatbot.png") }, thread, thread.comments.length ? 'canDelete' : undefined);
+	const AIComment = new NoteComment(new vscode.MarkdownString(responseText.trim()), vscode.CommentMode.Preview, { name: 'AI', iconPath: vscode.Uri.parse("https://img.icons8.com/fluency/96/null/chatbot.png") }, thread, thread.comments.length ? 'canDelete' : undefined);
 	thread.comments = [...thread.comments, AIComment];
 
 }
