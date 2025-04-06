@@ -184,7 +184,7 @@
                       :value="item.value"
                     ></el-option>
                 </el-select>
-                <el-button  style="
+                <!-- <el-button  style="
                 background-color: black;
                 height: 30%;
                 width: 7%;
@@ -192,7 +192,7 @@
                 left: 93%;
                 position: absolute;"
                 text
-                @click="newPro">NewPro</el-button>
+                @click="newPro">NewPro</el-button> -->
                 <div style="
                 height: 60%;
                 width: 100%;
@@ -507,10 +507,20 @@
                     document.body.removeChild(menu);
                     isMenu = false
                 });
+                const newproOption = document.createElement('div');
+                newproOption.textContent = 'New Project';
+                newproOption.style.padding = '5px';
+                newproOption.style.color =  "#4b85dd";
+                newproOption.style.fontWeight = 'bold';
+                newproOption.addEventListener('click', () => {
+                    newPro();
+                });
                 menu.appendChild(createFolderOption);
+                menu.appendChild(newproOption);
                 menu.appendChild(deleteFolderOption);
                 menu.appendChild(renameFolderOption);
                 menu.appendChild(displayFolderOption);
+
                 document.body.appendChild(menu);
             };
             function handleEvents(event,node,data) {
