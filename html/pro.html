@@ -209,13 +209,20 @@
                             class="fas fa-spinner fa-spin"></i></button>
                 </div>
          </div>
-        <el-dialog title="New Node" v-model="newFolderDialogVisible">
+        <el-dialog title="New Module" v-model="newFolderDialogVisible">
             <el-input v-model="newFolderName" placeholder="Enter folder name"></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="newFolderDialogVisible = false">Cancel</el-button>
                 <el-button type="primary" @click="addNode()">Create</el-button>
             </span>
         </el-dialog>
+        <el-dialog title="New Project" v-model="newProject">
+          <el-input v-model="newFolderName" placeholder="Enter folder name"></el-input>
+          <span slot="footer" class="dialog-footer">
+              <el-button @click="newProject = false">Cancel</el-button>
+              <el-button type="primary" @click="addNode()">Create</el-button>
+          </span>
+      </el-dialog>
         <el-dialog title="Are you sure you want to delete this node?" v-model="deleteFolderDialogVisible">
             <span slot="footer" class="dialog-footer">
                 <el-button @click="deleteFolderDialogVisible = false">Cancel</el-button>
@@ -251,10 +258,11 @@
             Plus
         },
         setup() {
+          const newProject = ref(false);
             const newPro = () =>{
 
                 handleNodeClick(tree.value)
-                newFolderDialogVisible.value = true;
+                newProject.value = true;
             }
             const textValue = ref('选中文件：#')  // 定义一个响应式变量
             const options = [
@@ -347,6 +355,7 @@
               currentNode.value.data.label = renameFolderName.value
               renameFolderDialogVisible.value = false
             }
+            
             // 动态添加节点
             const addNode = () => {
                 let newNode;//新建根节点还是新建叶子节点
@@ -362,6 +371,7 @@
                      fatherid: currentNode.value.data.id,
                      childlabel: newFolderName.value
                   })
+                  newFolderDialogVisible.value = false
               }else{
                   newNode = {
                       id:  newFolderName.value,
@@ -372,10 +382,11 @@
                      command: 'addpro',
                      childlabel: newFolderName.value
                   })
+                  newProject.value = false
               }
 
               tree.value.append(newNode,currentNode.value.data.id)
-              newFolderDialogVisible.value = false
+              
 
 
             };
@@ -464,7 +475,7 @@
 
                 });
                 const createFolderOption = document.createElement('div');
-                createFolderOption.textContent = 'New Moudle';
+                createFolderOption.textContent = 'New Module';
                 createFolderOption.style.padding = '5px';
                 createFolderOption.style.color =  "#4b85dd";
                 createFolderOption.style.fontWeight = 'bold';
@@ -474,7 +485,7 @@
                     isMenu = false
                 });
                 const deleteFolderOption = document.createElement('div');
-                deleteFolderOption.textContent = 'Delete Moudle';
+                deleteFolderOption.textContent = 'Delete Module';
                 deleteFolderOption.style.padding = '5px';
                 deleteFolderOption.style.color =  "#4b85dd";
                 deleteFolderOption.style.fontWeight = 'bold';
@@ -484,7 +495,7 @@
                     isMenu = false
                 });
                 const renameFolderOption = document.createElement('div');
-                renameFolderOption.textContent = 'Rename Moudle';
+                renameFolderOption.textContent = 'Rename Module';
                 renameFolderOption.style.padding = '5px';
                 renameFolderOption.style.color =  "#4b85dd";
                 renameFolderOption.style.fontWeight = 'bold';
@@ -494,7 +505,7 @@
                     isMenu = false
                 });
                 const displayFolderOption = document.createElement('div');
-                displayFolderOption.textContent = 'Display Moudle';
+                displayFolderOption.textContent = 'Display Module';
                 displayFolderOption.style.padding = '5px';
                 displayFolderOption.style.color =  "#4b85dd";
                 displayFolderOption.style.fontWeight = 'bold';
@@ -581,7 +592,8 @@
                 isDisabled,
                 chinese,
                 handleMess,
-                handleMouseDown
+                handleMouseDown,
+                newProject
             };
         }
     }).mount('#app');
